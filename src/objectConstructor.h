@@ -1,16 +1,29 @@
 #ifndef _OBJECTCONSTRUCTOR_H_
 #define _OBJECTCONSTRUCTOR_H_
 
-typedef struct Base
+# include <stdbool.h>
+
+typedef struct Position
 {
-	float rXPos;
-	float rYPos;
-    unsigned short uiPsiPos;
-	signed short iJerk;
-	signed short iAccel;
-	signed short iSpeed;
-    signed short iAngle;
-} Base;
+	float rX;
+	float rY;
+}
+Position;
+
+typedef struct Velocity
+{
+	float rDotX;
+	float rDotY;
+}
+Velocity;
+
+typedef struct Characteristics
+{
+	unsigned short uiHeight;
+	unsigned short uiWidth;
+	bool xVisible;
+}
+Characteristics;
 
 typedef struct Map
 {
@@ -19,11 +32,12 @@ typedef struct Map
 	unsigned short uiRightBorder[2];
 	unsigned short uiBottomBorder[2];
 	unsigned short uiTopBorder[2];
-} Map;
+}
+Map;
 
 void frameConstructor(Map *stFrame, unsigned short uiScreenWidth, unsigned short uiScreenHeight);
-void paddleConstructor(Base *stPaddle);
-void ballConstructor(Base *stBall);
-void blockConstructor();
+void paddleConstructor(Position *stPadPos, Velocity *stPadVel, Characteristics *stPadChar);
+void ballConstructor(Position *stBallPos, Velocity *stBallVel, Characteristics *stBallChar);
+void blockConstructor(Position *stBlockPos, Characteristics *stBlockChar, Map *stFrame, unsigned short uiNrOfBlocks);
 
 #endif

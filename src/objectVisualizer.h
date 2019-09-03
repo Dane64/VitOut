@@ -9,8 +9,9 @@
 void startVisualizer();
 void updateVisualizer();
 void frameVisualizer(Map *stFrame, Console *Vita, unsigned short uiScreenWidth, unsigned short uiScreenHeight);
-void ballVisualizer(Base *stBall);
-void paddleVisualizer(Base *stPaddle);
+void ballVisualizer(Position *stBallPos, Velocity *stBallVel, Characteristics *stBallChar);
+void paddleVisualizer(Position *stPadPos, Characteristics *stPadChar);
+void blockVisualizer(Position *stBlockPos, Characteristics *stBlockChar, unsigned short uiNrOfBlocks);
 void closeVisualizer();
 void finishVisualizer();
 

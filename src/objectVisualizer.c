@@ -6,10 +6,12 @@
 #define RED     RGBA8(255,   0,   0, 255)
 #define BLUE    RGBA8(  0,   0, 255, 255)
 
+#define MAX(a, b) ( ( a > b) ? a : b )
+#define MIN(a, b) ( ( a < b) ? a : b )
+
 extern unsigned int basicfont_size;
 extern unsigned char basicfont[];
 vita2d_font *font;
-
 
 void startVisualizer()
 {
@@ -37,16 +39,29 @@ void frameVisualizer(Map *stFrame, Console *Vita, unsigned short uiScreenWidth, 
     vita2d_font_draw_textf(font, 250, 300, WHITE, 25, "Center: ( %3d, %3d %3d)", uiScreenWidth, uiScreenHeight, stFrame->uiFrameThickness);*/
 }
 
-void ballVisualizer(Base *stBall)
+void ballVisualizer(Position *stBallPos, Velocity *stBallVel, Characteristics *stBallChar)
 {
-	vita2d_draw_fill_circle(stBall->rXPos, stBall->rYPos, 20, WHITE);
-    vita2d_font_draw_textf(font, 10, 525, WHITE, 25, "Ball Position: ( %1f, %1f )", stBall->rXPos, stBall->rYPos);
+	vita2d_draw_fill_circle(stBallPos->rX, stBallPos->rY, stBallChar->uiHeight, WHITE);
+//    vita2d_font_draw_textf(font, 10, 525, WHITE, 25, "Ball Position: ( %f, %f )", stBallPos->rX, stBallPos->rY);
+//    vita2d_font_draw_textf(font, 10, 525, WHITE, 25, "Ball Speed: ( %f, %f )", stBallVel->rDotX, stBallVel->rDotY);
 }
 
-void paddleVisualizer(Base *stPaddle)
+void paddleVisualizer(Position *stPadPos, Characteristics *stPadChar)
 {
-	vita2d_draw_rectangle(stPaddle->rXPos, stPaddle->rYPos, 180, 30, RED);
-	vita2d_font_draw_textf(font, 600, 525, WHITE, 25, "Paddle Position: ( %3f, %3f )", stPaddle->rXPos, stPaddle->rYPos);
+	vita2d_draw_rectangle(stPadPos->rX, stPadPos->rY, stPadChar->uiWidth, stPadChar->uiHeight, RED);
+//	vita2d_font_draw_textf(font, 600, 525, WHITE, 25, "Paddle Position: ( %f, %f )", stPadPos->rX, stPadPos->rY);
+}
+
+void blockVisualizer(Position *stBlockPos, Characteristics *stBlockChar, unsigned short uiNrOfBlocks)
+{
+    unsigned short i = 0;
+    for (i = 0; i < uiNrOfBlocks; i++)
+    {
+        if (stBlockChar[i].xVisible)
+        {
+            vita2d_draw_rectangle(stBlockPos[i].rX, stBlockPos[i].rY, stBlockChar[i].uiWidth, stBlockChar[i].uiHeight, BLUE);
+        }
+    }
 }
 
 void closeVisualizer()
