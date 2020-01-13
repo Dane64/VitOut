@@ -11,8 +11,8 @@
  <kbd>Start</kbd> (<kbd>Circle</kbd>) - Pause (Quit Game)
 
 ## Screenshots
-<img src="Screenshots/1.jpg"><br>
-<img src="Screenshots/2.jpg"><br>
+<img src="Screenshots/1.png"><br>
+<img src="Screenshots/2.png"><br>
 
 ## Special Thanks to:
 
