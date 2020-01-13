@@ -14,6 +14,11 @@
 <img src="Screenshots/1.png"><br>
 <img src="Screenshots/2.png"><br>
 
+## Known Bugs
+
+- Ball is able to go beyond wall boundaries at the moment
+- Ball could destroy multiple lines of bricks when hit from the side
+
 ## Special Thanks to:
 
 Vitadev Package manager for releasing the SDK
