@@ -6,13 +6,9 @@
 
 #include "objectUpdater.h"
 
-void startVisualizer();
-void updateVisualizer();
-void frameVisualizer(Map *stFrame, Console *Vita, unsigned short uiScreenWidth, unsigned short uiScreenHeight);
+void frameVisualizer(Map *stFrame, Console *stVita, unsigned short uiScreenWidth, unsigned short uiScreenHeight, bool xGamePaused);
 void ballVisualizer(Position *stBallPos, Velocity *stBallVel, Characteristics *stBallChar);
-void paddleVisualizer(Position *stPadPos, Characteristics *stPadChar);
+void paddleVisualizer(Position *stPadPos, Velocity *stPadVel, Characteristics *stPadChar);
 void blockVisualizer(Position *stBlockPos, Characteristics *stBlockChar, unsigned short uiNrOfBlocks);
-void closeVisualizer();
-void finishVisualizer();
 
 #endif

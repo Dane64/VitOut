@@ -1,7 +1,104 @@
 #ifndef _OBJECTCONSTRUCTOR_H_
 #define _OBJECTCONSTRUCTOR_H_
 
-# include <stdbool.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
+
+#define ROW 20
+#define COL 30
+
+static const char asLevelOne[ROW][COL] = 
+      {
+      "",
+      "",
+      "",
+      "",
+      "",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK"};
+
+static const char asLevelTwo[ROW][COL] = 
+	{
+      "K",
+      "KKK",
+      "KKKKK",
+      "KKKKKKK",
+      "KKKKKKKKK",
+      "KKKKKKKKKK",
+      "KKKKKKKKKKK",
+      "KKKKKKKKKKKKK",
+      "KKKKKKKKKKKKKK",
+      "KKKKKKKKKKKKKKK",
+      "KKKKKKKKKKKKKKKK",
+      "KKKKKKKKKKKKKKKKKK",
+      "bbbbbbbbbbbbbbbbbbbbbb",
+      "bbbbbbbbbbbbbbbbbbbbbbb",
+      "bbbbbbbbbbbbbbbbbbbbbbbbb",
+      "bbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "bbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "bbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "bbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"};
+
+static const char asLevelThree[ROW][COL] = 
+	{
+      "             bbb",
+      "             bbb",
+      "             bbb",
+      "          KKKKKKKKK",
+      "          KKKKKKKKK",
+      "             bbb",
+      "             bKb",
+      "             bKb",
+      "             bKb",
+      "             bKb",
+      "             bKb",
+      "              bKb",
+      "               bKb",
+      "              bKb",
+      "             bKb",
+      "              bKb",
+      "              bKb",
+      "               b",
+      "",
+      ""};
+
+static const char asLevelFour[ROW][COL] = 
+	{
+      " bbbb                    bbbb ",
+      " bpppbbbbb          bbbbbpppb ",
+      " bppppppppbb      bbppppppppb ",
+      " bppppppppppbbbbbbppppppppppb ",
+      " bppppppwwwwwwwwwwwwwwppppppb ",
+      "  bpppwwwwwwwwwwwwwwwwwwpppb  ",
+      "  wpwwwwwwwwwwWWwwwwwwwwwwpw  ",
+      " wwwwwwwwwwwwWWWWwwwwwwwwwwww ",
+      " wwwwwwwKKKKKWWWWKKKKKwwwwwww ",
+      " wwwwwwwKKBKKWWWWKKBKKwwwwwww ",
+      " wwwwwwwKKKKKWWWWKKKKKwwwwwww ",
+      "wwwwwwwwwwwWWWWWWWWwwwwwwwwwww",
+      "wwwwwwwwwwWWWWWWWWWWwwwwwwwwww",
+      "wwwwwwwwwWWWWWppWWWWWwwwwwwwww",
+      "wwwwwwwwwWWWppppppWWWwwwwwwwww",
+      " wwwwwwwWWWWWWppWWWWWWwwwwwww ",
+      "   wwwwWWWWWWWBBWWWWWWWwwww   ",
+      "     wWWWWWBBBBBBBBWWWWWw     ",
+      "       wWWWWWWWWWWWWWWw       ",
+      "      wWWWWWWWWWWWWWWWWw      "};
 
 typedef struct Position
 {
@@ -21,6 +118,7 @@ typedef struct Characteristics
 {
 	unsigned short uiHeight;
 	unsigned short uiWidth;
+	unsigned short uiLives;
 	bool xVisible;
 }
 Characteristics;
@@ -38,6 +136,7 @@ Map;
 void frameConstructor(Map *stFrame, unsigned short uiScreenWidth, unsigned short uiScreenHeight);
 void paddleConstructor(Position *stPadPos, Velocity *stPadVel, Characteristics *stPadChar);
 void ballConstructor(Position *stBallPos, Velocity *stBallVel, Characteristics *stBallChar);
-void blockConstructor(Position *stBlockPos, Characteristics *stBlockChar, Map *stFrame, unsigned short uiNrOfBlocks);
+void levelConstructor(Position *stBlockPos, Characteristics *stBlockChar, Map *stFrame, unsigned short uiStartLevel, unsigned short uiNrOfBlocks);
+void blockConstructor(Position *stBlockPos, Characteristics *stBlockChar, Map *stFrame, unsigned short auiPos[2], char uiBlockType);
 
 #endif

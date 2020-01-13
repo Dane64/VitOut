@@ -17,6 +17,62 @@ void frameConstructor(Map *stFrame, unsigned short uiScreenWidth, unsigned short
     stFrame->uiTopBorder[2] = 0;
 }
 
+void levelConstructor(Position *stBlockPos, Characteristics *stBlockChar, Map *stFrame, unsigned short uiStartLevel, unsigned short uiNrOfBlocks){
+    memset(stBlockChar, 0, uiNrOfBlocks * sizeof(*stBlockChar));
+    unsigned short i = 0;
+    unsigned short j = 0;
+    char sObject = 0;
+    unsigned short auiPos[2];
+    char asLevelCopy[ROW][COL];
+
+    switch (uiStartLevel)
+    {
+        case 1:
+            for (i = 0; i < ROW; i++)
+            {
+                strcpy(asLevelCopy[i], asLevelOne[i]);
+            }
+            break;
+
+        case 2:
+            for (i = 0; i < ROW; i++)
+            {
+                strcpy(asLevelCopy[i], asLevelTwo[i]);
+            }
+            break;        
+        
+        case 3:
+            for (i = 0; i < ROW; i++)
+            {
+                strcpy(asLevelCopy[i], asLevelThree[i]);
+            }
+            break;
+
+        case 4:
+            for (i = 0; i < ROW; i++)
+            {
+                strcpy(asLevelCopy[i], asLevelFour[i]);
+            }
+            break;
+            
+        default:
+            break;
+    }
+
+    for (i = 0; i < ROW; i++)
+    {
+        for (j = 0; j < COL; j++)
+        {
+            sObject = asLevelCopy[i][j];
+            if(sObject >= 32){
+                auiPos[0] = i;
+                auiPos[1] = j;
+                blockConstructor(stBlockPos, stBlockChar, stFrame, auiPos,sObject);
+            }
+        }
+    }
+}
+
 void paddleConstructor(Position *stPadPos, Velocity *stPadVel, Characteristics *stPadChar)
 {
     stPadPos->rX = 460;
@@ -30,39 +86,62 @@ void paddleConstructor(Position *stPadPos, Velocity *stPadVel, Characteristics *
 void ballConstructor(Position *stBallPos, Velocity *stBallVel, Characteristics *stBallChar)
 {
     stBallPos->rX = 460;
-    stBallPos->rY = 256;
-    stBallVel->rDotX = 2;
-    stBallVel->rDotY = 2;
+    stBallPos->rY = 490;
+    stBallVel->rDotX = 0;
+    stBallVel->rDotY = 0;
+    stBallChar->uiLives = 3;
     stBallChar->uiWidth = 8;
     stBallChar->uiHeight = 8;
 }
 
-void blockConstructor(Position *stBlockPos, Characteristics *stBlockChar, Map *stFrame, unsigned short uiNrOfBlocks)
+void blockConstructor(Position *stBlockPos, Characteristics *stBlockChar, Map *stFrame, unsigned short auiPos[2], char uiBlockType)
 {
-    unsigned short i = 0;
+    unsigned short k = (auiPos[0] * COL) + auiPos[1];
     unsigned short uiBlockAlignment = 2;
-    unsigned short uiBlocksPerRow = 20;
-    stBlockChar[i].uiWidth = (stFrame->uiRightBorder[1] - stFrame->uiLeftBorder[1] - stFrame->uiFrameThickness - (uiBlockAlignment * uiBlocksPerRow)) / uiBlocksPerRow;
-    stBlockChar[i].uiHeight = 10;
-    stBlockChar[i].xVisible = true;
-    stBlockPos[i].rX = 0 + stFrame->uiFrameThickness;
-    stBlockPos[i].rY = 0 + stFrame->uiFrameThickness;
+    stBlockChar[k].uiWidth = (stFrame->uiRightBorder[1] - stFrame->uiLeftBorder[1] - stFrame->uiFrameThickness - (uiBlockAlignment * COL)) / COL;
+    stBlockChar[k].uiHeight = 10;
 
-    for (i = 1; i < uiNrOfBlocks; i++)
-    {
-        stBlockChar[i].xVisible = true;
-        stBlockChar[i].uiWidth = stBlockChar[0].uiWidth;
-        stBlockChar[i].uiHeight = stBlockChar[0].uiHeight;
-        stBlockPos[i].rX = stBlockPos[i-1].rX + stBlockChar[i-1].uiWidth + uiBlockAlignment;
-        
-        if (stBlockPos[i].rX < (stFrame->uiRightBorder[1] - stBlockChar[i].uiWidth))
-        {
-            stBlockPos[i].rY = stBlockPos[i-1].rY;
-        }
-        else
-        {
-            stBlockPos[i].rX = 0 + stFrame->uiFrameThickness;
-            stBlockPos[i].rY = stBlockPos[i-1].rY + stBlockChar[i-1].uiHeight + uiBlockAlignment;
-        }
+    if(uiBlockType == 32){
+        stBlockChar[k].xVisible = false;
+        stBlockChar[k].uiLives = 0;
     }
+
+    else if(uiBlockType == 66){
+        stBlockChar[k].xVisible = true;
+        stBlockChar[k].uiLives = 6;
+    }
+
+    else if(uiBlockType == 75){
+        stBlockChar[k].xVisible = true;
+        stBlockChar[k].uiLives = 1;
+    }
+
+    else if(uiBlockType == 87){
+        stBlockChar[k].xVisible = true;
+        stBlockChar[k].uiLives = 4;
+    }
+
+    else if(uiBlockType == 98){
+        stBlockChar[k].xVisible = true;
+        stBlockChar[k].uiLives = 2;
+    }
+
+    else if(uiBlockType == 112){
+        stBlockChar[k].xVisible = true;
+        stBlockChar[k].uiLives = 3;
+    }
+
+    else if(uiBlockType == 119){
+        stBlockChar[k].xVisible = true;
+        stBlockChar[k].uiLives = 5;
+    }
+
+    else
+    {
+        stBlockChar[k].xVisible = false;
+        stBlockChar[k].uiLives = 0;
+    }
+    
+    stBlockPos[k].rX = auiPos[1] * (stBlockChar[k].uiWidth + uiBlockAlignment) + stFrame->uiFrameThickness;
+    stBlockPos[k].rY = auiPos[0] * (stBlockChar[k].uiHeight + uiBlockAlignment) + stFrame->uiFrameThickness;
 }

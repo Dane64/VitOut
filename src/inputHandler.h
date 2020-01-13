@@ -7,13 +7,15 @@ typedef struct Joystick
 {
    signed char siY;
    signed char siX;
-}Joystick;
+} Joystick;
 
 typedef struct Touch
 {
-    char usiY;
-    char usiX;
-}Touch;
+    unsigned short uiY;
+    unsigned short uiX;
+    bool xRtrig;
+    bool xFtrig;
+} Touch;
 
 typedef struct Console
 {
@@ -30,6 +32,9 @@ typedef struct Console
     bool xStart;
     bool xSelect;
 
+    bool xRightTrigger;
+    bool xLeftTrigger;
+
     Joystick stLeftJoy;
     Joystick stRightJoy;
 
@@ -37,6 +42,7 @@ typedef struct Console
     Touch stRearTouch;
 } Console;
 
-void inputHandler(Console *stVita);
+void startInput();
+void inputRead(Console *stVita);
 
 #endif

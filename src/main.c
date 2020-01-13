@@ -1,49 +1,36 @@
 #include <stdio.h>
-
 #include <psp2/kernel/processmgr.h>
-
+#include "menu.h"
+#include "game.h"
+#include "audio.h"
 #include "inputHandler.h"
-#include "objectConstructor.h"
-#include "objectUpdater.h"
-#include "objectVisualizer.h"
-
-#define NROFBLOCKS 100
+#include "splashScreen.h"
 
 int main() {
 	unsigned short uiScreenWidth = 960;
 	unsigned short uiScreenHeight = 544;
-
-	Position stBallPos;
-	Position stPadPos;
-	Position stBlockPos[NROFBLOCKS];
-
-	Velocity stBallVel;
-	Velocity stPadVel;
-
-	Characteristics stBallChar;
-	Characteristics stPadChar;
-	Characteristics stBlockChar[NROFBLOCKS];
-
-	Map stFrame;
+	unsigned short uiStartLevel = 0;
+	
 	Console stVita;
 
-	frameConstructor(&stFrame, uiScreenWidth, uiScreenHeight);
-	paddleConstructor(&stPadPos, &stPadVel, &stPadChar);
-	ballConstructor(&stBallPos, &stBallVel, &stBallChar);
-	blockConstructor(stBlockPos, stBlockChar, &stFrame, NROFBLOCKS);
+	startInput();
 	startVisualizer();
+	startAudio();
+	splash();
 
 	while (1) {
-		inputHandler(&stVita);
-		paddleUpdate(&stPadPos, &stPadVel, &stPadChar, &stVita, &stFrame);
-		ballUpdate(&stBallPos, &stBallVel, &stBallChar, &stFrame, &stPadPos, &stPadVel, &stPadChar, stBlockPos,stBlockChar, NROFBLOCKS);
-
+		inputRead(&stVita);
 		updateVisualizer();
-		frameVisualizer(&stFrame, &stVita, uiScreenWidth, uiScreenHeight);
-		paddleVisualizer(&stPadPos, &stPadChar);
-		blockVisualizer(stBlockPos, stBlockChar, NROFBLOCKS);
-		ballVisualizer(&stBallPos, &stBallVel, &stBallChar);
-
+		if (uiStartLevel == 0)
+		{
+			uiStartLevel = drawMenuItems(&stVita, uiScreenWidth, uiScreenHeight);
+		}
+		
+		if (uiStartLevel >= 1)
+		{
+			uiStartLevel = engine(&stVita, uiScreenWidth, uiScreenHeight, uiStartLevel);
+		}
+		
 		closeVisualizer();
 	}
 

@@ -8,13 +8,13 @@ if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
   endif()
 endif()
 
-set(SHORT_NAME ViOut)
+set(SHORT_NAME VitOut)
 project(${SHORT_NAME})
 include("${VITASDK}/share/vita.cmake" REQUIRED)
 
-set(VITA_APP_NAME "VitaOut")
-set(VITA_TITLEID  "VITAOUT")
-set(VITA_VERSION  "00.90")
+set(VITA_APP_NAME "VitOut")
+set(VITA_TITLEID  "VITABREAK")
+set(VITA_VERSION  "01.30")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -24,7 +24,10 @@ include_directories(
 
 add_executable(${SHORT_NAME}
   src/main.c
-  src/font.c
+  src/menu.c
+  src/splashScreen.c
+  src/audio.cpp
+  src/game.c
   src/objectConstructor.c
   src/inputHandler.c
   src/objectUpdater.c
@@ -52,4 +55,14 @@ vita_create_self(${SHORT_NAME}.self ${SHORT_NAME})
 vita_create_vpk(${SHORT_NAME}.vpk ${VITA_TITLEID} ${SHORT_NAME}.self
   VERSION ${VITA_VERSION}
   NAME ${VITA_APP_NAME}
+ FILE src/Roboto-Regular.ttf Roboto-Regular.ttf
+ FILE sce_game/psv.png icons/psv.png
+ FILE sce_game/textFrame.png icons/textFrame.png
+ FILE sce_sys/icon0.png sce_sys/icon0.png
+ FILE sce_sys/livearea/contents/bg0.png sce_sys/livearea/contents/bg0.png
+ FILE sce_sys/livearea/contents/startup.png sce_sys/livearea/contents/startup.png
+ FILE sce_sys/livearea/contents/template.xml sce_sys/livearea/contents/template.xml
+ FILE src/pong_paddle.ogg pong_paddle.ogg
+ FILE src/pong_score.ogg pong_score.ogg
+ FILE src/pong_wall.ogg pong_wall.ogg
 )
