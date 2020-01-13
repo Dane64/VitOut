@@ -10,6 +10,10 @@
  <kbd>Cross</kbd> - Release ball \
  <kbd>Start</kbd> (<kbd>Circle</kbd>) - Pause (Quit Game)
 
+## Screenshots
+<img src="Screenshots/1.jpg"><br>
+<img src="Screenshots/2.jpg"><br>
+
 ## Special Thanks to:
 
 Vitadev Package manager for releasing the SDK
