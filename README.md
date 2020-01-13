@@ -4,7 +4,7 @@
 [<img src="https://img.shields.io/github/v/release/Dane64/Vitout">](https://github.com/Dane64/VitOut/releases/latest)
 
 ## How to play:
- <kbd>Tap</kbd> - Start
+ <kbd>Tap</kbd> - Start&nbsp;
  <kbd>Tap</kbd> - Level 1 - 4
  <kbd>Left Joystick</kbd> - Move Paddle
  <kbd>Start</kbd> (<kbd>Circle</kbd>) - Pause (Quit Game)
