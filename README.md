@@ -7,6 +7,7 @@
  <kbd>Tap</kbd> - Start \
  <kbd>Tap</kbd> - Level 1 - 4 \
  <kbd>Left Joystick</kbd> - Move Paddle \
+ <kbd>Cross</kbd> - Release ball \
  <kbd>Start</kbd> (<kbd>Circle</kbd>) - Pause (Quit Game)
 
 ## Special Thanks to:
