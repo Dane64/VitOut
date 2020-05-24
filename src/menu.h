@@ -4,6 +4,6 @@
 #include "objectConstructor.h"
 #include "objectVisualizer.h"
 
-void mainMenu(tEnumState *eGameState, stGamePad *stMcd);
+void mainMenu(tEnumState *eGameState, stGamePad *stMcd, unsigned char *usiHighScore);
 
 #endif

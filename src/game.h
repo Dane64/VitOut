@@ -5,6 +5,6 @@
 #include "objectUpdater.h"
 #include "objectVisualizer.h"
 
-void gameLoop(tEnumState *eGameState, stGamePad *stMcd);
+void gameLoop(tEnumState *eGameState, stGamePad *stMcd, unsigned char *usiHighScore);
 
 #endif

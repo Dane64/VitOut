@@ -13,13 +13,28 @@ void updateVisualizer()
 	vita2d_clear_screen();
 }
 
+void showHighscore(unsigned short uiHighScore)
+{
+	for (int i=1; i <4; i++)
+	{
+		if (uiHighScore >= i)
+		{
+			vita2d_draw_fill_circle(WIDTH-(25*i), HEIGHT-25, 10, BRONZE);
+		}
+		else
+		{
+			vita2d_draw_fill_circle(WIDTH-(25*i), HEIGHT-25, 10, WHITE);
+		}
+	}
+}
+
 void showDifficulty(unsigned char usiLevel)
 {
 	unsigned char i;
 
 	for (i = 1; i < usiLevel+1; i++)
 	{
-		vita2d_draw_rectangle(WIDTH-(20*i), 20, 15, 15, RED);
+		vita2d_draw_rectangle(WIDTH-(20*i), HEIGHT-75, 15, 15, RED);
 	}
 }
 
@@ -43,6 +58,20 @@ void showPaddle(tStObject *stPaddle)
 void showBall(tStObject *stBall)
 {
 	vita2d_draw_fill_circle(stBall->rX, stBall->rY, stBall->uiHeight, stBall->luiColor);
+
+	//Show lives
+	for (int i=1; i <MAXLIVES+1; i++)
+	{
+		if (stBall->uiLives >= i)
+		{
+			vita2d_draw_fill_circle(WIDTH-(18*i), 5, 4, stBall->luiColor);
+		}
+		else
+		{
+			vita2d_draw_fill_circle(WIDTH-(18*i), 5, 4, WHITE);
+		}
+	}
+
 }
 
 void showFrame(tStObject *stFrame)

@@ -16,6 +16,8 @@
 
 #define ROW 20
 #define COL 30
+#define MAXLEVEL 6
+#define MAXLIVES 5
 
 typedef struct tStObject
 {
@@ -38,20 +40,25 @@ typedef enum tEnumState{
 	LevelSettings,
 	DiskSettings,
 	MainMenu,
-	Playing,
-	Paused,
 	Credits,
+	Quitting,
 	Quit,
-      LevelOne = 11, // MUST STAY 11 TO CORRECTLY LOAD THE LEVELS
-      LevelTwo,
-      LevelThree,
-      LevelFour,
-      LevelFive
+	Paused,
+	Playing,
+    LevelOne = 11, // MUST STAY 11 TO CORRECTLY LOAD THE LEVELS
+    LevelTwo,
+    LevelThree,
+    LevelFour,
+    LevelFive,
+    LevelSix
 } tEnumState;
 
 void frameConstructor(tStObject *stFrame);
 void paddleConstructor(tStObject *stPad);
 void ballConstructor(tStObject *stBall);
 void levelConstructor(unsigned char usiLevel, tStObject *stFrame, tStObject *stBrick, unsigned short uiNumberOfBricks);
+
+bool loadGame(unsigned char *usiHighScore);
+bool saveGame(unsigned char *usiHighScore);
 
 #endif

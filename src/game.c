@@ -10,9 +10,11 @@ tStObject stBrick[BRICKS];
 tEnumState ePrvGameState = MainMenu;
 bool xInit = true;
 
-void gameLoop(tEnumState *eGameState, stGamePad *stMcd)
+void gameLoop(tEnumState *eGameState, stGamePad *stMcd, unsigned char *usiHighScore)
 {
-	if (ePrvGameState != *eGameState)
+	static unsigned char usiLevelLoaded;
+
+	if (ePrvGameState != *eGameState && *eGameState >= Playing)
 	{
 		xInit = true;
 	}
@@ -25,25 +27,52 @@ void gameLoop(tEnumState *eGameState, stGamePad *stMcd)
 			ballConstructor(&stBall);
 			paddleConstructor(&stPaddle);
 		}
-		levelConstructor(*eGameState - 10, stFrame, stBrick, BRICKS);
+		usiLevelLoaded = *eGameState - 10;
+		levelConstructor(usiLevelLoaded, stFrame, stBrick, BRICKS);
 		xInit = false;
 	}
 
+	float tDelta = getElapsedtime();
+
 	if (*eGameState != Paused)
 	{
-		paddleUpdate(stMcd, &stPaddle, stFrame);
-		ballUpdate(stMcd, &stBall, &stPaddle, stFrame, stBrick, BRICKS);
-		brickUpdate(stBrick, BRICKS);
+		paddleUpdate(stMcd, &stPaddle, stFrame, tDelta);
+		ballUpdate(stMcd, &stBall, &stPaddle, stFrame, stBrick, BRICKS, tDelta);
+		brickUpdate(*eGameState, stBrick, BRICKS, tDelta);
 	}
 
-	if (*eGameState >= Playing)
+	if (*eGameState >= Paused)
 	{
+		showFrame(stFrame);
 		showPaddle(&stPaddle);
 		showBall(&stBall);
-		showFrame(stFrame);
+	}
+
+	if (stMcd->stButt[7].xTrigger && *eGameState >= Paused)
+	{
+		if (*eGameState >= Playing)
+		{
+			*eGameState = Paused;
+		}
+		else
+		{
+			*eGameState = Playing;
+		}
 	}
 
 	showBrick(stBrick, BRICKS);
-
 	ePrvGameState = *eGameState;
+
+	if (stBall.uiLives == 0 || checkBricks(stBrick, BRICKS))
+	{
+		xInit = true;
+		if (usiHighScore[usiLevelLoaded-1] < stBall.uiLives) // TODO: Make better highscore system
+		{
+			usiHighScore[usiLevelLoaded-1] = stBall.uiLives;
+			saveGame(usiHighScore);
+		}
+
+		stBall.uiLives = -1;		// gameLoop is getting called every cycle, set lives to -1 to prevent constantly switching back to MainMenu
+		*eGameState = MainMenu;
+	}
 }

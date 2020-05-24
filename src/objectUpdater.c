@@ -17,6 +17,16 @@ typedef struct tStIntercept
     tEnumHitPlane ePlane;
 } tStIntercept;
 
+float getElapsedtime()
+{
+    static SceRtcTick uliLast;
+    SceRtcTick uliCurrent;
+    sceRtcGetCurrentTick(&uliCurrent);
+    float tDelta = (uliCurrent.tick - uliLast.tick) / (float)sceRtcGetTickResolution();
+    uliLast = uliCurrent;
+    return tDelta;
+}
+
 bool checkOverlap(tStObject *stBall, tStObject *stRect) // AABB (Axis Aligned Bounding Box)
 {
     return  stBall->rX >= (stRect->rX - stBall->uiWidth) &&
@@ -107,11 +117,6 @@ tStIntercept ballIntercept (tStObject *stBall, tStObject *stRect, float rDotX, f
 
 bool checkCollision(tStObject *stBall, tStObject *stFrame, tStObject *stPaddle, tStObject *stBrick, unsigned short uiNumberOfBricks, float rTime)
 {
-    // if (rTime <= 0)
-    // {
-    //     return true;
-    // }
-
 	bool xPaddleCollision = false;
     int iBrickHit = -1;
     float rDistance = 0.0;
@@ -180,13 +185,9 @@ bool checkCollision(tStObject *stBall, tStObject *stFrame, tStObject *stPaddle, 
 
     if (rClosest < 999.9) // Less than it's original value means it hit something
     {
-        if (iBrickHit >= 0)
-        {
-            stBrick[iBrickHit].uiLives--;
-        }
         stBall->rX = stClosestIntercept.x;
         stBall->rY = stClosestIntercept.y;
-        float rIntendedSpeed = sqrtf(powf(rNewBallDotX,2) + powf(rNewBallDotY,2));
+        float rIntendedSpeed = sqrtf(powf(rNewBallDotX, 2) + powf(rNewBallDotY, 2));
         float rTimeRemaining = rTime - (rTime * (rClosest / rIntendedSpeed));
 
         if (xPaddleCollision && stClosestIntercept.ePlane == Top)
@@ -194,8 +195,21 @@ bool checkCollision(tStObject *stBall, tStObject *stFrame, tStObject *stPaddle, 
             float rBallSpeed = sqrtf(powf(stBall->rDotX, 2) + powf(stBall->rDotY, 2));
             float rMaxLateralSpeed = 350;
             float rNormHit = ((stBall->rX - (stPaddle->rX + (float)stPaddle->uiWidth / 2))  / ((float)stPaddle->uiWidth / 2));
-            stBall->rDotX = rMaxLateralSpeed * rNormHit;//(stPaddle->rDotX / 2) + rNormHit < 0 ? rNormHit * rMaxLateralSpeed - 20 : rNormHit * rMaxLateralSpeed + 20;
+            stBall->rDotX = rMaxLateralSpeed * rNormHit;
             stBall->rDotY = sqrtf(powf(rBallSpeed,2) - powf(stBall->rDotX, 2));
+        }
+        if (iBrickHit >= 0 )
+        {
+            float rMaxBallSpeed = 1200;
+            float rBallSpeed = sqrtf(powf(stBall->rDotX, 2) + powf(stBall->rDotY, 2));
+            stBall->rDotX > 0 ? stBall->rDotX + (5 * (1 - (rBallSpeed / rMaxBallSpeed))) : stBall->rDotX - (5 * (1 - (rBallSpeed / rMaxBallSpeed)));
+            stBall->rDotY > 0 ? stBall->rDotY + (5 * (1 - (rBallSpeed / rMaxBallSpeed))) : stBall->rDotY - (5 * (1 - (rBallSpeed / rMaxBallSpeed)));
+
+            stBrick[iBrickHit].uiLives--;
+            if (stBrick[iBrickHit].uiLives == 0)
+            {
+                stBrick[iBrickHit].xVisible^= 1;
+            }
         }
 
         if (stClosestIntercept.ePlane == Left || stClosestIntercept.ePlane == Right)
@@ -216,14 +230,8 @@ bool checkCollision(tStObject *stBall, tStObject *stFrame, tStObject *stPaddle, 
     return false;
 }
 
-void paddleUpdate(stGamePad *stMcd, tStObject *stPaddle, tStObject *stFrame)
+void paddleUpdate(stGamePad *stMcd, tStObject *stPaddle, tStObject *stFrame, float tDelta)
 {
-    static SceRtcTick uliLast;
-    SceRtcTick uliCurrent;
-    sceRtcGetCurrentTick(&uliCurrent);
-    float tDelta = (uliCurrent.tick - uliLast.tick) / (float)sceRtcGetTickResolution();
-    uliLast = uliCurrent;
-
     float rMaxPaddleSpeed = 750;
     stPaddle->rDotX = 0;
     stPaddle->rDotY = 0;
@@ -243,49 +251,99 @@ void paddleUpdate(stGamePad *stMcd, tStObject *stPaddle, tStObject *stFrame)
     // }
 }
 
-void ballUpdate(stGamePad *stMcd, tStObject *stBall, tStObject *stPaddle, tStObject *stFrame, tStObject *stBrick, unsigned short uiNumberOfBricks)
+void ballUpdate(stGamePad *stMcd, tStObject *stBall, tStObject *stPaddle, tStObject *stFrame, tStObject *stBrick, unsigned short uiNumberOfBricks, float tDelta)
 {
-    static SceRtcTick uliLast;
-    SceRtcTick uliCurrent;
-    sceRtcGetCurrentTick(&uliCurrent);
-    float tDelta = (uliCurrent.tick - uliLast.tick) / (float)sceRtcGetTickResolution();
-    uliLast = uliCurrent;
+    static unsigned short uiOldLives;
 
-    // // reset ball position
-    // if (stBall->rDotX == 0 && stBall->rDotY == 0)
-    // {
-    //     stBall->rX = stPaddle->rX + (stPaddle->uiWidth / 2);
-    //     stBall->rY = stPaddle->rY - stBall->uiHeight;
-
-    //     if (stMcd->stButt[1].xTrigger)
-    //     {
-    //         unsigned short lfsr = 0xACE1u;
-    //         unsigned bit;
-    //         bit  = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5) ) & 1;
-    //         lfsr = (lfsr >> 1) | (bit << 15);
-    //         stBall->rDotY = -(lfsr%1000);
-    //         stBall->rDotX = -(lfsr%100);
-    //     }
-    // }
-
-        if (stMcd->stButt[1].xTrigger){
-            stBall->rDotY = -400;
-            stBall->rDotX = -100;       
-        }
-
-    // stBall->rDotX = stMcd->stJoy[1].siX;
-    // stBall->rDotY = stMcd->stJoy[1].siY;
-
-    checkCollision(stBall, stFrame, stPaddle, stBrick, uiNumberOfBricks, tDelta);
-}
-
-void brickUpdate(tStObject *stBrick, unsigned short uiNumberOfBricks)
-{
-    for (int i=0; i<uiNumberOfBricks; i++)
+    // reset ball position
+    if (stBall->rDotX == 0 && stBall->rDotY == 0)
     {
-        if (stBrick[i].uiLives == 0 && stBrick[i].xVisible)
+        stBall->rX = stPaddle->rX + (stPaddle->uiWidth / 2);
+        stBall->rY = stPaddle->rY - stBall->uiHeight;
+
+        if (stMcd->stButt[1].xTrigger)
         {
-            stBrick[i].xVisible^= 1;
+            stBall->rDotY = -400;
+            stBall->rDotX = -100;
         }
     }
+
+    checkCollision(stBall, stFrame, stPaddle, stBrick, uiNumberOfBricks, tDelta);
+
+    // Check ball position
+    if (stBall->rY > (stPaddle->rY + stPaddle->uiHeight + stBall->uiHeight))
+    {
+        stBall->uiLives--;
+    }
+
+    // reset ball speed
+    if (stBall->uiLives < uiOldLives)
+    {
+        stBall->rDotX = 0;
+        stBall->rDotY = 0;
+    }
+
+    uiOldLives = stBall->uiLives;
+}
+
+void brickUpdate(tEnumState eGameState, tStObject *stBrick, unsigned short uiNumberOfBricks, float tDelta)
+{
+    static float tCum;
+    tCum += tDelta;
+
+    if (eGameState == MainMenu && tCum > 0.2)
+    {
+        for (int i=0; i<uiNumberOfBricks/3; i++)
+        {
+            stBrick[i].uiLives++;
+
+            if (stBrick[i].uiLives == 6)
+            {
+                stBrick[i].uiLives = 2;
+            }
+        }
+        tCum = 0.0;
+    }
+    else if (eGameState == LevelSettings && tCum > 0.2)
+    {
+        for (int i=uiNumberOfBricks/3; i<uiNumberOfBricks-uiNumberOfBricks/3; i++)
+        {
+            stBrick[i].uiLives++;
+
+            if (stBrick[i].uiLives == 6)
+            {
+                stBrick[i].uiLives = 2;
+            }
+        }
+        tCum = 0.0;
+    }
+    else if (eGameState == Quitting && tCum > 0.2)
+    {
+        for (int i=uiNumberOfBricks-uiNumberOfBricks/3; i<uiNumberOfBricks; i++)
+        {
+            stBrick[i].uiLives++;
+
+            if (stBrick[i].uiLives == 6)
+            {
+                stBrick[i].uiLives = 2;
+            }
+        }
+        tCum = 0.0;
+    }
+}
+
+bool checkBricks(tStObject *stBrick, unsigned short uiNumberOfBricks)
+{
+    bool xAllBricksDestroyed = true;
+
+    for (int i=0; i<uiNumberOfBricks; i++)
+    {
+        if (stBrick[i].xVisible)
+        {
+            xAllBricksDestroyed = false;
+            break;
+        }
+    }
+
+    return xAllBricksDestroyed;
 }

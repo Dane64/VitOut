@@ -3,11 +3,13 @@
 
 stGamePad stMcd;
 tEnumState eGameState;
+unsigned char usiHighScore[MAXLEVEL];
 
 int main()
 {
 	startVisualizer();
 	startInput();
+	loadGame(usiHighScore);
 	eGameState = MainMenu;
 
 	while (eGameState != Quit)
@@ -15,8 +17,8 @@ int main()
 		inputRead(&stMcd);
 		updateVisualizer();
 
-		gameLoop(&eGameState, &stMcd);
-		mainMenu(&eGameState, &stMcd);
+		gameLoop(&eGameState, &stMcd, usiHighScore);
+		mainMenu(&eGameState, &stMcd, usiHighScore);
 
 		closeVisualizer();
 	}

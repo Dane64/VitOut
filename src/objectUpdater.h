@@ -7,8 +7,10 @@
 #include <psp2/kernel/threadmgr.h>
 #include <psp2/rtc.h>
 
-void paddleUpdate(stGamePad *stMcd, tStObject *stPaddle, tStObject *stFrame);
-void ballUpdate(stGamePad *stMcd, tStObject *stBall, tStObject *stPaddle, tStObject *stFrame, tStObject *stBrick, unsigned short uiNumberOfBricks);
-void brickUpdate(tStObject *stBrick, unsigned short uiNumberOfBricks);
+float getElapsedtime();
+void paddleUpdate(stGamePad *stMcd, tStObject *stPaddle, tStObject *stFrame, float tDelta);
+void ballUpdate(stGamePad *stMcd, tStObject *stBall, tStObject *stPaddle, tStObject *stFrame, tStObject *stBrick, unsigned short uiNumberOfBricks, float tDelta);
+void brickUpdate(tEnumState eGameState, tStObject *stBrick, unsigned short uiNumberOfBricks, float tDelta);
+bool checkBricks(tStObject *stBrick, unsigned short uiNumberOfBricks);
 
 #endif
