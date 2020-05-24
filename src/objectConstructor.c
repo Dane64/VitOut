@@ -1,147 +1,316 @@
 #include "objectConstructor.h"
+#include "objectVisualizer.h"
+#include <stdlib.h>
+#include <string.h>
 
-void frameConstructor(Map *stFrame, unsigned short uiScreenWidth, unsigned short uiScreenHeight)
+static const char asLevelOne[ROW][COL] = 
+      {
+      "                              ",
+      "                              ",
+      "                              ",
+      "                              ",
+      "                              ",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK",
+      "bbbbbKKKKKbbbbbKKKKKbbbbbKKKKK"};
+
+static const char asLevelTwo[ROW][COL] = 
+	{
+      "K                             ",
+      "KKK                           ",
+      "KKKKK                         ",
+      "KKKKKKK                       ",
+      "KKKKKKKKK                     ",
+      "KKKKKKKKKK                    ",
+      "KKKKKKKKKKK                   ",
+      "KKKKKKKKKKKKK                 ",
+      "KKKKKKKKKKKKKK                ",
+      "KKKKKKKKKKKKKKK               ",
+      "KKKKKKKKKKKKKKKK              ",
+      "KKKKKKKKKKKKKKKKKK            ",
+      "bbbbbbbbbbbbbbbbbbbbbb        ",
+      "bbbbbbbbbbbbbbbbbbbbbbb       ",
+      "bbbbbbbbbbbbbbbbbbbbbbbbb     ",
+      "bbbbbbbbbbbbbbbbbbbbbbbbbb    ",
+      "bbbbbbbbbbbbbbbbbbbbbbbbbbb   ",
+      "bbbbbbbbbbbbbbbbbbbbbbbbbbbb  ",
+      "bbbbbbbbbbbbbbbbbbbbbbbbbbbbb ",
+      "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"};
+
+static const char asLevelThree[ROW][COL] = 
+	{
+      "             bbb",
+      "             bbb",
+      "             bbb",
+      "          KKKKKKKKK",
+      "          KKKKKKKKK",
+      "             bbb",
+      "             bKb",
+      "             bKb",
+      "             bKb",
+      "             bKb",
+      "             bKb",
+      "              bKb",
+      "               bKb",
+      "              bKb",
+      "             bKb",
+      "              bKb",
+      "              bKb",
+      "               b",
+      "",
+      ""};
+
+static const char asLevelFour[ROW][COL] = 
+	{
+      " bbbb                    bbbb ",
+      " bpppbbbbb          bbbbbpppb ",
+      " bppppppppbb      bbppppppppb ",
+      " bppppppppppbbbbbbppppppppppb ",
+      " bppppppwwwwwwwwwwwwwwppppppb ",
+      "  bpppwwwwwwwwwwwwwwwwwwpppb  ",
+      "  wpwwwwwwwwwwWWwwwwwwwwwwpw  ",
+      " wwwwwwwwwwwwWWWWwwwwwwwwwwww ",
+      " wwwwwwwKKKKKWWWWKKKKKwwwwwww ",
+      " wwwwwwwKKBKKWWWWKKBKKwwwwwww ",
+      " wwwwwwwKKKKKWWWWKKKKKwwwwwww ",
+      "wwwwwwwwwwwWWWWWWWWwwwwwwwwwww",
+      "wwwwwwwwwwWWWWWWWWWWwwwwwwwwww",
+      "wwwwwwwwwWWWWWppWWWWWwwwwwwwww",
+      "wwwwwwwwwWWWppppppWWWwwwwwwwww",
+      " wwwwwwwWWWWWWppWWWWWWwwwwwww ",
+      "   wwwwWWWWWWWBBWWWWWWWwwww   ",
+      "     wWWWWWBBBBBBBBWWWWWw     ",
+      "       wWWWWWWWWWWWWWWw       ",
+      "      wWWWWWWWWWWWWWWWWw      "};
+
+static const char asLevelFive[ROW][COL] = 
+	{
+      "              BB              ",
+      "         WWWWWBBWWWWW         ",
+      "        WWWWWWWWWWWWWW        ",
+      "       WW            WW       ",
+      "      WW              WW      ",
+      "     WW                WW     ",
+      "  WWWW                  WWWW  ",
+      " WWWW                    WWWW ",
+      "  WWWWWWWWWWWWWWWWWWWWWWWWWW  ",
+      " WBKKKKWWWWWWWWWWWWWWWWKKKKBW ",
+      "WWBKKKKKWWWWWWWWWWWWWWKKKKKBWW",
+      "WWWKKKKKKWWWBBBBBBWWWKKKKKKWWW",
+      "WWWWKKKKKKWBBBBBBBBWKKKKKKWWWW",
+      " WWWWWWWWWWWWWWWWWWWWWWWWWWWW ",
+      " BWWWWWWBBBBwwwwwwBBBBWWWWWWB ",
+      " BWWWWWBBBBBwwwwwwBBBBBWWWWWB ",
+      " BWWWWBBWBBBBBBBBBBBBWBBWWWWB ",
+      " BBWWWWWW            WWWWWWBB ",
+      " BBBBB                  BBBBB ",
+      " BBBBB                  BBBBB "};
+
+static const char asMainMenu[ROW][COL] = 
+      {
+      "                              ",
+      "  RRR RRRRR  RR   RRRR  RRRRR ",
+      "  R     R   R  R  R   R   R   ",
+      "  RRR   R  RRRRRR RRRR    R   ",
+      "    R   R  R    R R  R    R   ",
+      "  RRR   R  R    R R   R   R   ",
+      "                              ",
+      "                              ",
+      " K    KKKKK K    K KKKKK K    ",
+      " K    K     K    K K     K    ",
+      " K    KKKK   K  K  KKKKK K    ",
+      " K    K      K  K  K     K    ",
+      " KKKK KKKKK   KK   KKKKK KKKK ",
+      "                              ",
+      "                              ",
+      "    WWWW  W   W WWWWW WWWWW   ",
+      "    W  W  W   W   W     W     ",
+      "    W  W  W   W   W     W     ",
+      "    W  W  W   W   W     W     ",
+      "    WWWWW WWWWW WWWWW   W     "};
+
+
+void frameConstructor(tStObject *stFrame)
 {
-    stFrame->uiFrameThickness = 10;
+    stFrame[0].uiWidth = 10; // LEFT FRAME
+    stFrame[0].uiHeight = HEIGHT;
+    stFrame[0].rX = 0;
+    stFrame[0].rY = 0;
+    stFrame[0].xVisible = true;
+    stFrame[0].luiColor = GREEN;
 
-    stFrame->uiLeftBorder[1] = 0;
-    stFrame->uiLeftBorder[2] = 0;
+    stFrame[1].uiWidth = 10; // RIGHT FRAME
+    stFrame[1].uiHeight = HEIGHT;
+    stFrame[1].rX = WIDTH-stFrame[1].uiWidth;
+    stFrame[1].rY = 0;
+    stFrame[1].xVisible = true;
+    stFrame[1].luiColor = GREEN;
 
-    stFrame->uiRightBorder[1] = uiScreenWidth - stFrame->uiFrameThickness;
-    stFrame->uiRightBorder[2] = 0;
+    stFrame[2].uiHeight = 10;  // TOP FRAME
+    stFrame[2].uiWidth = WIDTH;
+    stFrame[2].rX = 0;
+    stFrame[2].rY = 0;
+    stFrame[2].xVisible = true;
+    stFrame[2].luiColor = GREEN;
 
-    stFrame->uiBottomBorder[1] = stFrame->uiFrameThickness;
-    stFrame->uiBottomBorder[2] = uiScreenHeight - stFrame->uiFrameThickness;
-
-    stFrame->uiTopBorder[1] = stFrame->uiFrameThickness;
-    stFrame->uiTopBorder[2] = 0;
+    stFrame[3].uiHeight = 10; // BOTTOM FRAME
+    stFrame[3].uiWidth = WIDTH;
+    stFrame[3].rX = 0;
+    stFrame[3].rY = HEIGHT-stFrame[3].uiHeight;
+    stFrame[3].xVisible = false;
+    stFrame[3].luiColor = GREEN;
 }
 
-void levelConstructor(Position *stBlockPos, Characteristics *stBlockChar, Map *stFrame, unsigned short uiStartLevel, unsigned short uiNrOfBlocks){
-    memset(stBlockChar, 0, uiNrOfBlocks * sizeof(*stBlockChar));
-    unsigned short i = 0;
-    unsigned short j = 0;
-    char sObject = 0;
-    unsigned short auiPos[2];
+void paddleConstructor(tStObject *stPaddle)
+{
+    stPaddle->rX = WIDTH/2-180/2;
+    stPaddle->rY = 500.0;
+    stPaddle->rDotX = 0.0;
+    stPaddle->rDotY = 0.0;
+    stPaddle->uiWidth = 180;
+    stPaddle->uiHeight = 30;
+    stPaddle->xVisible = true;
+    stPaddle->luiColor = RED;
+}
+
+void ballConstructor(tStObject *stBall)
+{
+    stBall->rX = WIDTH/2;
+    stBall->rY = 492;
+    stBall->rDotX = 0;
+    stBall->rDotY = 0;
+    stBall->uiLives = 3;
+    stBall->uiWidth = 8;
+    stBall->uiHeight = 8;
+    stBall->luiColor = MAGENTA;
+}
+
+void brickConstructor(tStObject *stFrame, tStObject *stBrick, unsigned short i, unsigned short j, char s)
+{
+    unsigned short uiBrickAlignment = 1;
+    unsigned short k = (i * COL) + j;
+    unsigned short uiCenterOffset = 5;
+    stBrick[k].uiWidth = 30; // 30 COLS fixed width
+    stBrick[k].uiHeight = 15; // 20 ROWS fixed height
+
+    if(s == ' '){
+        stBrick[k].xVisible = false;
+        stBrick[k].uiLives = 0;
+    }
+    else if(s == 'B'){
+        stBrick[k].xVisible = true;
+        stBrick[k].uiLives = 1;
+        stBrick[k].luiColor = BLACK;
+    }
+    else if(s == 'K'){
+        stBrick[k].xVisible = true;
+        stBrick[k].uiLives = 2;
+        stBrick[k].luiColor = ORANGE;
+    }
+    else if(s == 'R'){
+        stBrick[k].xVisible = true;
+        stBrick[k].uiLives = 2;
+        stBrick[k].luiColor = RED;
+    }
+    else if(s == 'W'){
+        stBrick[k].xVisible = true;
+        stBrick[k].uiLives = 2;
+        stBrick[k].luiColor = WHITE;
+    }
+    else if(s == 'b'){
+        stBrick[k].xVisible = true;
+        stBrick[k].uiLives = 1;
+        stBrick[k].luiColor = BROWN;
+    }
+    else if(s == 'p'){
+        stBrick[k].xVisible = true;
+        stBrick[k].uiLives = 2;
+        stBrick[k].luiColor = PINK;
+    }
+    else if(s == 'w'){
+        stBrick[k].xVisible = true;
+        stBrick[k].uiLives = 3;
+        stBrick[k].luiColor = WHEAT;
+    }
+
+    stBrick[k].rX = j * (stBrick[k].uiWidth + uiBrickAlignment) + stFrame->uiWidth + uiCenterOffset;
+    stBrick[k].rY = i * (stBrick[k].uiHeight + uiBrickAlignment) + stFrame->uiWidth;
+}
+
+void levelConstructor(unsigned char usiLevel, tStObject *stFrame, tStObject *stBrick, unsigned short uiNumberOfBricks)
+{
+    memset(stBrick, 0, uiNumberOfBricks * sizeof(tStObject));
     char asLevelCopy[ROW][COL];
 
-    switch (uiStartLevel)
+    switch(usiLevel)
     {
         case 1:
-            for (i = 0; i < ROW; i++)
-            {
-                strcpy(asLevelCopy[i], asLevelOne[i]);
-            }
+            memcpy(*asLevelCopy, *asLevelOne, (sizeof(unsigned char) * ROW * COL));
             break;
 
         case 2:
-            for (i = 0; i < ROW; i++)
-            {
-                strcpy(asLevelCopy[i], asLevelTwo[i]);
-            }
-            break;        
-        
-        case 3:
-            for (i = 0; i < ROW; i++)
-            {
-                strcpy(asLevelCopy[i], asLevelThree[i]);
-            }
+            memcpy(*asLevelCopy, *asLevelTwo, (sizeof(unsigned char) * ROW * COL));
             break;
 
-        case 4:
-            for (i = 0; i < ROW; i++)
-            {
-                strcpy(asLevelCopy[i], asLevelFour[i]);
-            }
+        case 3:
+            memcpy(*asLevelCopy, *asLevelThree, (sizeof(unsigned char) * ROW * COL));
             break;
-            
+
+         case 4:
+            memcpy(*asLevelCopy, *asLevelFour, (sizeof(unsigned char) * ROW * COL));
+            break;
+
+        case 5:
+            memcpy(*asLevelCopy, *asLevelFive, (sizeof(unsigned char) * ROW * COL));
+            break;
         default:
+            memcpy(*asLevelCopy, *asMainMenu, (sizeof(unsigned char) * ROW * COL));
             break;
     }
 
-    for (i = 0; i < ROW; i++)
+    for (unsigned short i = 0; i < ROW; i++)
     {
-        for (j = 0; j < COL; j++)
+        for (unsigned short j = 0; j < COL; j++)
         {
-            sObject = asLevelCopy[i][j];
-            if(sObject >= 32){
-                auiPos[0] = i;
-                auiPos[1] = j;
-                blockConstructor(stBlockPos, stBlockChar, stFrame, auiPos,sObject);
+            char sObject = asLevelCopy[i][j];
+            if(sObject > 31){
+                brickConstructor(stFrame, stBrick, i, j, sObject);
             }
         }
-    }
+    }   
 }
 
-void paddleConstructor(Position *stPadPos, Velocity *stPadVel, Characteristics *stPadChar)
-{
-    stPadPos->rX = 460;
-    stPadPos->rY = 500;
-    stPadVel->rDotX = 0;
-    stPadVel->rDotY = 0;
-    stPadChar->uiWidth = 180;
-    stPadChar->uiHeight = 30;
-}
+    // unsigned short uiBrickAlignment = 2;
+    // unsigned short uiBricksPerRow = 20;
+    // unsigned short uiIncreaseRow = 0;
+    // unsigned short uiWidth = (stFrame[1].rX - (stFrame[0].rX + stFrame[0].uiWidth) - (uiBrickAlignment * uiBricksPerRow)) / uiBricksPerRow;
+    // unsigned short uiCenterOffset = ((stFrame[1].rX - (stFrame[0].rX + stFrame[0].uiWidth)) - ((uiBricksPerRow * uiWidth) + (uiBrickAlignment * uiBricksPerRow))) / 2;
+    // unsigned short uiHeight = 10;
+    // unsigned short uiRow = uiNumberOfBricks/uiBricksPerRow;
 
-void ballConstructor(Position *stBallPos, Velocity *stBallVel, Characteristics *stBallChar)
-{
-    stBallPos->rX = 460;
-    stBallPos->rY = 490;
-    stBallVel->rDotX = 0;
-    stBallVel->rDotY = 0;
-    stBallChar->uiLives = 3;
-    stBallChar->uiWidth = 8;
-    stBallChar->uiHeight = 8;
-}
-
-void blockConstructor(Position *stBlockPos, Characteristics *stBlockChar, Map *stFrame, unsigned short auiPos[2], char uiBlockType)
-{
-    unsigned short k = (auiPos[0] * COL) + auiPos[1];
-    unsigned short uiBlockAlignment = 2;
-    stBlockChar[k].uiWidth = (stFrame->uiRightBorder[1] - stFrame->uiLeftBorder[1] - stFrame->uiFrameThickness - (uiBlockAlignment * COL)) / COL;
-    stBlockChar[k].uiHeight = 10;
-
-    if(uiBlockType == 32){
-        stBlockChar[k].xVisible = false;
-        stBlockChar[k].uiLives = 0;
-    }
-
-    else if(uiBlockType == 66){
-        stBlockChar[k].xVisible = true;
-        stBlockChar[k].uiLives = 6;
-    }
-
-    else if(uiBlockType == 75){
-        stBlockChar[k].xVisible = true;
-        stBlockChar[k].uiLives = 1;
-    }
-
-    else if(uiBlockType == 87){
-        stBlockChar[k].xVisible = true;
-        stBlockChar[k].uiLives = 4;
-    }
-
-    else if(uiBlockType == 98){
-        stBlockChar[k].xVisible = true;
-        stBlockChar[k].uiLives = 2;
-    }
-
-    else if(uiBlockType == 112){
-        stBlockChar[k].xVisible = true;
-        stBlockChar[k].uiLives = 3;
-    }
-
-    else if(uiBlockType == 119){
-        stBlockChar[k].xVisible = true;
-        stBlockChar[k].uiLives = 5;
-    }
-
-    else
-    {
-        stBlockChar[k].xVisible = false;
-        stBlockChar[k].uiLives = 0;
-    }
-    
-    stBlockPos[k].rX = auiPos[1] * (stBlockChar[k].uiWidth + uiBlockAlignment) + stFrame->uiFrameThickness;
-    stBlockPos[k].rY = auiPos[0] * (stBlockChar[k].uiHeight + uiBlockAlignment) + stFrame->uiFrameThickness;
-}
+    // for (unsigned short i=0; i<uiRow; i++)
+    // {
+    //     uiIncreaseRow += uiHeight + uiBrickAlignment;
+    //     for (unsigned short j=0; j<uiBricksPerRow; j++)
+    //     {
+    //         stBrick[i*uiBricksPerRow+j].xVisible = true;
+    //         stBrick[i*uiBricksPerRow+j].uiLives = 2;
+    //         stBrick[i*uiBricksPerRow+j].uiWidth = uiWidth;
+    //         stBrick[i*uiBricksPerRow+j].uiHeight = uiHeight;
+    //         stBrick[i*uiBricksPerRow+j].rY = uiIncreaseRow;
+    //         stBrick[i*uiBricksPerRow+j].rX = j == 0 ? stFrame[0].uiWidth + uiCenterOffset : stBrick[i*uiBricksPerRow+j-1].rX + stBrick[i*uiBricksPerRow+j].uiWidth + uiBrickAlignment;
+    //         stBrick[i*uiBricksPerRow+j].luiColor = BLUE;
+    //     }
+    // }

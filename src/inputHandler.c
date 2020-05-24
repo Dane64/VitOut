@@ -2,133 +2,63 @@
 #include <psp2/touch.h>
 #include "inputHandler.h"
 
-#define RELEASED 0
-#define TOUCHING 1
-#define TOUCHED 2
-#define RELEASING 3
-
-unsigned short uiRearTouchReport;
-unsigned short uiFrontTouchReport;
-
 void startInput(){
-    sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
-    sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);
-    sceTouchSetSamplingState(SCE_TOUCH_PORT_BACK, SCE_TOUCH_SAMPLING_STATE_START);
+    if (PLATFORM == Vita)
+        sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
+        sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);
+        sceTouchSetSamplingState(SCE_TOUCH_PORT_BACK, SCE_TOUCH_SAMPLING_STATE_START);
 }
 
-void inputRead(Console *stVita) {
-    SceCtrlData pad;
-    SceTouchData touch;
+void inputRead(stGamePad *stMcd) {
+        SceCtrlData stPad;
+        SceTouchData stTouch; // TODO Not allowed here, must be in vita function
+    if (PLATFORM == Vita) // Button layout borrowed from DS3 controller
+        sceCtrlPeekBufferPositive(0, &stPad, 1);
 
-    sceCtrlPeekBufferPositive(0, &pad, 1);
-    stVita->xCircle = (pad.buttons & SCE_CTRL_CIRCLE);
-    stVita->xCross = (pad.buttons & SCE_CTRL_CROSS);
-    stVita->xTriangle = (pad.buttons & SCE_CTRL_TRIANGLE);
-    stVita->xSquare = (pad.buttons & SCE_CTRL_SQUARE);
+        stMcd->stButt[0].xTrigger = !stMcd->stButt[0].xHold && (stPad.buttons & SCE_CTRL_SQUARE);
+        stMcd->stButt[0].xHold = (stPad.buttons & SCE_CTRL_SQUARE);
 
-    stVita->xUp = (pad.buttons & SCE_CTRL_UP);
-    stVita->xDown = (pad.buttons & SCE_CTRL_DOWN);
-    stVita->xLeft = (pad.buttons & SCE_CTRL_LEFT);
-    stVita->xRight = (pad.buttons & SCE_CTRL_RIGHT);
+        stMcd->stButt[1].xTrigger = !stMcd->stButt[1].xHold && (stPad.buttons & SCE_CTRL_CROSS);
+        stMcd->stButt[1].xHold = (stPad.buttons & SCE_CTRL_CROSS);
 
-    stVita->xLeftTrigger = (pad.buttons & SCE_CTRL_LTRIGGER);
-    stVita->xRightTrigger = (pad.buttons & SCE_CTRL_RTRIGGER);
+        stMcd->stButt[2].xTrigger = !stMcd->stButt[2].xHold && (stPad.buttons & SCE_CTRL_CIRCLE);
+        stMcd->stButt[2].xHold = (stPad.buttons & SCE_CTRL_CIRCLE);
 
-    stVita->xStart = (pad.buttons & SCE_CTRL_START);
-    stVita->xSelect = (pad.buttons & SCE_CTRL_SELECT);
+        stMcd->stButt[3].xTrigger = !stMcd->stButt[3].xHold && (stPad.buttons & SCE_CTRL_TRIANGLE);
+        stMcd->stButt[3].xHold = (stPad.buttons & SCE_CTRL_TRIANGLE);
 
-    stVita->stLeftJoy.siX = (signed char)pad.lx - 128;
-    stVita->stLeftJoy.siY = (signed char)pad.ly - 128;
-    stVita->stRightJoy.siX = (signed char)pad.rx - 128;
-    stVita->stRightJoy.siY = (signed char)pad.ry - 128;
+        stMcd->stButt[4].xTrigger = !stMcd->stButt[4].xHold && (stPad.buttons & SCE_CTRL_LTRIGGER);
+        stMcd->stButt[4].xHold = (stPad.buttons & SCE_CTRL_LTRIGGER);
 
-    sceTouchPeek(SCE_TOUCH_PORT_BACK, &touch, 1);
-    if (touch.reportNum > 0)
-    {
-        stVita->stRearTouch.uiX = touch.report[0].x / 2;
-        stVita->stRearTouch.uiY = touch.report[0].y / 2;
-    }
-    else
-    {
-        stVita->stRearTouch.uiX = 0;
-        stVita->stRearTouch.uiY = 0;
-    }
+        stMcd->stButt[5].xTrigger = !stMcd->stButt[5].xHold && (stPad.buttons & SCE_CTRL_RTRIGGER);
+        stMcd->stButt[5].xHold = (stPad.buttons & SCE_CTRL_RTRIGGER);
 
-    stVita->stRearTouch.xFtrig = false;
-    stVita->stRearTouch.xRtrig = false;
+        stMcd->stButt[6].xTrigger = !stMcd->stButt[6].xHold && (stPad.buttons & SCE_CTRL_SELECT);
+        stMcd->stButt[6].xHold = (stPad.buttons & SCE_CTRL_SELECT);
 
-   switch (uiRearTouchReport)
-    {
-        case RELEASED:
-            if (stVita->stRearTouch.uiX > 0)
-            {
-                uiRearTouchReport = TOUCHING;
-            }
-            break;
+        stMcd->stButt[7].xTrigger = !stMcd->stButt[7].xHold && (stPad.buttons & SCE_CTRL_START);
+        stMcd->stButt[7].xHold = (stPad.buttons & SCE_CTRL_START);
 
-        case TOUCHING:
-            stVita->stRearTouch.xRtrig = true;
-            uiRearTouchReport = TOUCHED;
-            break;
-        
-        case TOUCHED:
-            if (stVita->stRearTouch.uiX == 0)
-            {
-                uiRearTouchReport = RELEASING;
-            }
-            break;
+        stMcd->stDpad[0].xTrigger = (!(stMcd->stDpad[0].xUp || stMcd->stDpad[0].xDown || stMcd->stDpad[0].xLeft || stMcd->stDpad[0].xRight) &&
+                                    ((stPad.buttons & SCE_CTRL_UP) || (stPad.buttons & SCE_CTRL_DOWN) || (stPad.buttons & SCE_CTRL_LEFT) || (stPad.buttons & SCE_CTRL_RIGHT)));                                    
+        stMcd->stDpad[0].xUp = (stPad.buttons & SCE_CTRL_UP);
+        stMcd->stDpad[0].xDown = (stPad.buttons & SCE_CTRL_DOWN);
+        stMcd->stDpad[0].xLeft = (stPad.buttons & SCE_CTRL_LEFT);
+        stMcd->stDpad[0].xRight = (stPad.buttons & SCE_CTRL_RIGHT);
 
-        case RELEASING:
-            stVita->stRearTouch.xFtrig = true;
-            uiRearTouchReport = RELEASED;
-            break;
+        stMcd->stJoy[0].siX = stPad.lx > 127 ? limit(100,0, stPad.lx-137) : limit(0,-100, stPad.lx-117);
+        stMcd->stJoy[0].siY = stPad.ly > 127 ? limit(100,0, stPad.ly-137) : limit(0,-100, stPad.ly-117);
 
-        default:
-            break;
-    }
+        stMcd->stJoy[1].siX = stPad.rx > 127 ? limit(100,0, stPad.rx-137) : limit(0,-100, stPad.rx-117);
+        stMcd->stJoy[1].siY = stPad.ry > 127 ? limit(100,0, stPad.ry-137) : limit(0,-100, stPad.ry-117);
 
-    sceTouchPeek(SCE_TOUCH_PORT_FRONT, &touch, 1);
-    if (touch.reportNum > 0)
-    {
-        stVita->stFrontTouch.uiX = touch.report[0].x / 2;
-        stVita->stFrontTouch.uiY = touch.report[0].y / 2;
-    }
-    else
-    {
-        stVita->stFrontTouch.uiX = 0;
-        stVita->stFrontTouch.uiY = 0;
-    }    
+        sceTouchPeek(SCE_TOUCH_PORT_FRONT, &stTouch, 1);
+        stMcd->stTouch[0].xTrigger = (stMcd->stTouch[0].uiX == 0) && (stTouch.report[0].x > 0);
+        stMcd->stTouch[0].uiX = (stTouch.reportNum > 0) ? stTouch.report[0].x/2 : 0;
+        stMcd->stTouch[0].uiY = (stTouch.reportNum > 0) ? stTouch.report[0].y/2 : 0;
 
-    stVita->stFrontTouch.xFtrig = false;
-    stVita->stFrontTouch.xRtrig = false;
-
-   switch (uiFrontTouchReport)
-    {
-        case RELEASED:
-            if (stVita->stFrontTouch.uiX > 0)
-            {
-                uiFrontTouchReport = TOUCHING;
-            }
-            break;
-
-        case TOUCHING:
-            stVita->stFrontTouch.xRtrig = true;
-            uiFrontTouchReport = TOUCHED;
-            break;
-        
-        case TOUCHED:
-            if (stVita->stFrontTouch.uiX == 0)
-            {
-                uiFrontTouchReport = RELEASING;
-            }
-            break;
-
-        case RELEASING:
-            stVita->stFrontTouch.xFtrig = true;
-            uiFrontTouchReport = RELEASED;
-            break;
-
-        default:
-            break;
-    }
+        sceTouchPeek(SCE_TOUCH_PORT_BACK, &stTouch, 1);
+        stMcd->stTouch[1].xTrigger = (stMcd->stTouch[1].uiX == 0) && (stTouch.report[0].x > 0);
+        stMcd->stTouch[1].uiX = (stTouch.reportNum > 0) ? stTouch.report[0].x/2 : 0;
+        stMcd->stTouch[1].uiY = (stTouch.reportNum > 0) ? stTouch.report[0].y/2 : 0;
 }

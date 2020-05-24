@@ -1,71 +1,49 @@
 #include "game.h"
 
-#define NROFBLOCKS 600
+#define BRICKS 600
 
-    Position stBallPos;
-	Position stPadPos;
-	Position stBlockPos[NROFBLOCKS];
+tStObject stFrame[4];
+tStObject stBall;
+tStObject stPaddle;
+tStObject stBrick[BRICKS];
 
-	Velocity stBallVel;
-	Velocity stPadVel;
+tEnumState ePrvGameState = MainMenu;
+bool xInit = true;
 
-	Characteristics stBallChar;
-	Characteristics stPadChar;
-	Characteristics stBlockChar[NROFBLOCKS];
-
-	Map stFrame;
-
-	unsigned short uiInit = 1;
-
-	bool xGameDone;
-	bool xOldButtonState;
-	bool xGamePaused;
-
-int engine(/*GameState *eGame,*/ Console *stVita, unsigned short uiScreenWidth, unsigned short uiScreenHeight, unsigned short uiStartLevel) {	
-    
-	if (uiInit == 1)
+void gameLoop(tEnumState *eGameState, stGamePad *stMcd)
+{
+	if (ePrvGameState != *eGameState)
 	{
-		frameConstructor(&stFrame, uiScreenWidth, uiScreenHeight);
-		paddleConstructor(&stPadPos, &stPadVel, &stPadChar);
-		ballConstructor(&stBallPos, &stBallVel, &stBallChar);
-		levelConstructor(stBlockPos, stBlockChar, &stFrame, uiStartLevel, NROFBLOCKS);
-//		blockConstructor(stBlockPos, stBlockChar, &stFrame, NROFBLOCKS);
-		loadAudio();
-		uiInit = 0;
+		xInit = true;
 	}
 
-	if (stVita->xStart && !xOldButtonState && !xGamePaused)
+	if (xInit)
 	{
-		xGamePaused = true;
-	}
-	else if (stVita->xStart && !xOldButtonState && xGamePaused)
-	{
-		xGamePaused = false;
-	}
-
-	xOldButtonState = stVita->xStart;
-
-	if(xGamePaused || stBallChar.uiLives == 0)
-	{
-		xGameDone = stVita->xCircle;
-	}
-	else
-	{
-		paddleUpdate(&stPadPos, &stPadVel, &stPadChar, stVita, &stFrame);
-		xGameDone = ballUpdate(&stBallPos, &stBallVel, &stBallChar, &stFrame, &stPadPos, &stPadVel, &stPadChar, stBlockPos, stBlockChar, stVita, NROFBLOCKS);
+		if (*eGameState >= Playing)
+		{
+			frameConstructor(stFrame);
+			ballConstructor(&stBall);
+			paddleConstructor(&stPaddle);
+		}
+		levelConstructor(*eGameState - 10, stFrame, stBrick, BRICKS);
+		xInit = false;
 	}
 
-	frameVisualizer(&stFrame, stVita, uiScreenWidth, uiScreenHeight, xGamePaused);
-	paddleVisualizer(&stPadPos, &stPadVel, &stPadChar);
-	blockVisualizer(stBlockPos, stBlockChar, NROFBLOCKS);
-	ballVisualizer(&stBallPos, &stBallVel, &stBallChar);
-
-	if(xGameDone)
+	if (*eGameState != Paused)
 	{
-		uiInit = 1;
-		return 0;
+		paddleUpdate(stMcd, &stPaddle, stFrame);
+		ballUpdate(stMcd, &stBall, &stPaddle, stFrame, stBrick, BRICKS);
+		brickUpdate(stBrick, BRICKS);
 	}
 
-	return 1;
+	if (*eGameState >= Playing)
+	{
+		showPaddle(&stPaddle);
+		showBall(&stBall);
+		showFrame(stFrame);
+	}
 
+	showBrick(stBrick, BRICKS);
+
+	ePrvGameState = *eGameState;
 }

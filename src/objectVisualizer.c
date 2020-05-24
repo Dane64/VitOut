@@ -1,94 +1,100 @@
 #include "objectVisualizer.h"
 
-#define BLACK   RGBA8(  0,   0,   0, 255)
-#define GREY    RGBA8(111, 111, 111, 255)
-#define WHITE   RGBA8(255, 255, 255, 255)
-#define RED     RGBA8(255,   0,   0, 255)
-#define ORANGE  RGBA8(255, 165,   0, 255)
-#define YELLOW  RGBA8(255, 255,   0, 255)
-#define GREEN   RGBA8(  0, 255,   0, 255)
-#define CYAN    RGBA8(  0, 255, 255, 255)
-#define BLUE    RGBA8(  0,   0, 255, 255)
-#define INDIGO  RGBA8(111,   0, 255, 255)
-#define MAGENTA RGBA8(255,   0, 255, 255)
-
-#define BROWN   RGBA8(139,  69,  19, 255)
-#define WHEAT   RGBA8(245, 222, 179, 255)
-#define PINK    RGBA8(255, 192, 203, 255)
-#define KHAKI   RGBA8(240, 230, 140, 255)
-
-#define MAX(a, b) ( ( a > b) ? a : b )
-#define MIN(a, b) ( ( a < b) ? a : b )
-
-void frameVisualizer(Map *stFrame, Console *stVita, unsigned short uiScreenWidth, unsigned short uiScreenHeight, bool xGamePaused)
+void startVisualizer()
 {
-//    vita2d_draw_rectangle(stFrame->uiBottomBorder[1], stFrame->uiBottomBorder[2], uiScreenWidth - stFrame->uiFrameThickness, stFrame->uiFrameThickness, GREEN);
-    vita2d_draw_rectangle(stFrame->uiTopBorder[1], stFrame->uiTopBorder[2], uiScreenWidth - stFrame->uiFrameThickness, stFrame->uiFrameThickness, GREEN);
-    vita2d_draw_rectangle(stFrame->uiLeftBorder[1], stFrame->uiLeftBorder[2], stFrame->uiFrameThickness, uiScreenHeight, GREEN);
-    vita2d_draw_rectangle(stFrame->uiRightBorder[1], stFrame->uiRightBorder[2], stFrame->uiFrameThickness, uiScreenHeight, GREEN);
-
-    if(xGamePaused)
-    {
-        vita2d_font_draw_text(font, 250, 325, RED, 150, "PAUSED");
-    }
- /*   vita2d_font_draw_textf(font, 250, 50, WHITE, 25, "TOP: ( %3d, %3d )", stFrame->uiTopBorder[1],stFrame->uiTopBorder[2]);
-    vita2d_font_draw_textf(font, 250, 100, WHITE, 25, "BOTTOM: ( %3d, %3d )", stFrame->uiBottomBorder[1],stFrame->uiBottomBorder[2]);
-    vita2d_font_draw_textf(font, 250, 150, WHITE, 25, "LEFT: ( %3d, %3d )", stFrame->uiLeftBorder[1],stFrame->uiLeftBorder[2]);
-    vita2d_font_draw_textf(font, 250, 200, WHITE, 25, "RIGHT: ( %3d, %3d )", stFrame->uiRightBorder[1],stFrame->uiRightBorder[2]);
-    vita2d_font_draw_textf(font, 250, 300, WHITE, 25, "Center: ( %3d, %3d %3d)", uiScreenWidth, uiScreenHeight, stFrame->uiFrameThickness);*/
+	vita2d_init_advanced_with_msaa(1048576, SCE_GXM_MULTISAMPLE_4X);
+	vita2d_set_vblank_wait(1);
+	vita2d_set_clear_color(GREY);
 }
 
-void ballVisualizer(Position *stBallPos, Velocity *stBallVel, Characteristics *stBallChar)
+void updateVisualizer()
 {
-	vita2d_draw_fill_circle(stBallPos->rX, stBallPos->rY, stBallChar->uiHeight, WHITE);
-//    vita2d_font_draw_textf(font, 10, 525, WHITE, 25, "Ball Position: ( %f, %f )", stBallPos->rX, stBallPos->rY);
-//    vita2d_font_draw_textf(font, 10, 525, WHITE, 25, "Ball Speed: ( %f, %f )", stBallVel->rDotX, stBallVel->rDotY);
-    vita2d_font_draw_textf(font, 850, 35, WHITE, 25, "Lives: %i", stBallChar->uiLives);
-
-    if(stBallChar->uiLives == 0)
-    {
-        vita2d_font_draw_text(font, 75, 325, RED, 150, "GAME OVER");
-    }
+	vita2d_start_drawing();
+	vita2d_clear_screen();
 }
 
-void paddleVisualizer(Position *stPadPos, Velocity *stPadVel, Characteristics *stPadChar)
+void showDifficulty(unsigned char usiLevel)
 {
-	vita2d_draw_rectangle(stPadPos->rX, stPadPos->rY, stPadChar->uiWidth, stPadChar->uiHeight, RED);
-//	vita2d_font_draw_textf(font, 600, 525, WHITE, 25, "Paddle Position: ( %f, %f )", stPadPos->rX, stPadPos->rY);
-//    vita2d_font_draw_textf(font, 600, 525, WHITE, 25, "Paddle Speed: ( %f, %f )", stPadVel->rDotX, stPadVel->rDotY);
+	unsigned char i;
+
+	for (i = 1; i < usiLevel+1; i++)
+	{
+		vita2d_draw_rectangle(WIDTH-(20*i), 20, 15, 15, RED);
+	}
 }
 
-void blockVisualizer(Position *stBlockPos, Characteristics *stBlockChar, unsigned short uiNrOfBlocks)
+void showPaddle(tStObject *stPaddle)
 {
-    unsigned short i = 0;
-    for (i = 0; i < uiNrOfBlocks; i++)
-    {
-        if (stBlockChar[i].xVisible)
-        {
-            if (stBlockChar[i].uiLives == 6)
-            {
-                vita2d_draw_rectangle(stBlockPos[i].rX, stBlockPos[i].rY, stBlockChar[i].uiWidth, stBlockChar[i].uiHeight, BLACK);
-            }
-            else if (stBlockChar[i].uiLives == 5)
-            {
-                vita2d_draw_rectangle(stBlockPos[i].rX, stBlockPos[i].rY, stBlockChar[i].uiWidth, stBlockChar[i].uiHeight, WHEAT);
-            }
-            else if (stBlockChar[i].uiLives == 4)
-            {
-                vita2d_draw_rectangle(stBlockPos[i].rX, stBlockPos[i].rY, stBlockChar[i].uiWidth, stBlockChar[i].uiHeight, WHITE);
-            }
-            else if (stBlockChar[i].uiLives == 3)
-            {
-                vita2d_draw_rectangle(stBlockPos[i].rX, stBlockPos[i].rY, stBlockChar[i].uiWidth, stBlockChar[i].uiHeight, PINK);
-            }
-            else if (stBlockChar[i].uiLives == 2)
-            {
-                vita2d_draw_rectangle(stBlockPos[i].rX, stBlockPos[i].rY, stBlockChar[i].uiWidth, stBlockChar[i].uiHeight, BROWN);
-            }
-            else if (stBlockChar[i].uiLives == 1)
-            {
-                vita2d_draw_rectangle(stBlockPos[i].rX, stBlockPos[i].rY, stBlockChar[i].uiWidth, stBlockChar[i].uiHeight, KHAKI);
-            }
-        }
-    }
+	unsigned char usiRedTerm = stPaddle->luiColor & 0xFF;
+	unsigned char usiGreenTerm = ((stPaddle->luiColor)>>8) & 0xFF;
+	unsigned char usiBlueTerm = ((stPaddle->luiColor)>>16) & 0xFF;
+
+	unsigned int luiDarkerColor = ((((255)&0xFF)<<24) | (((usiBlueTerm/7)&0xFF)<<16) | (((usiGreenTerm/7)&0xFF)<<8) | (((usiRedTerm/7)&0xFF)<<0));
+
+	vita2d_draw_fill_circle(stPaddle->rX+stPaddle->uiHeight/2, stPaddle->rY+stPaddle->uiHeight/2, stPaddle->uiHeight/2, luiDarkerColor);
+	vita2d_draw_fill_circle(stPaddle->rX+stPaddle->uiWidth-stPaddle->uiHeight/2, stPaddle->rY+stPaddle->uiHeight/2, stPaddle->uiHeight/2, luiDarkerColor);
+	vita2d_draw_rectangle(stPaddle->rX+stPaddle->uiHeight/2, stPaddle->rY, stPaddle->uiWidth-stPaddle->uiHeight, stPaddle->uiHeight, stPaddle->luiColor);
+	vita2d_draw_rectangle(stPaddle->rX+stPaddle->uiHeight, stPaddle->rY, 5, stPaddle->uiHeight, luiDarkerColor);
+	vita2d_draw_rectangle(stPaddle->rX+stPaddle->uiWidth-stPaddle->uiHeight-5, stPaddle->rY, 5, stPaddle->uiHeight, luiDarkerColor);
+	// vita2d_draw_line(stPaddle->rX+stPaddle->uiHeight/2, stPaddle->rY+stPaddle->uiHeight*1/6, stPaddle->rX+stPaddle->uiWidth-stPaddle->uiHeight/2, stPaddle->rY+stPaddle->uiHeight*1/6, luiDarkerColor);
+	// vita2d_draw_line(stPaddle->rX+stPaddle->uiHeight/2, stPaddle->rY+stPaddle->uiHeight*5/6, stPaddle->rX+stPaddle->uiWidth-stPaddle->uiHeight/2, stPaddle->rY+stPaddle->uiHeight*5/6, luiDarkerColor);
+}
+
+void showBall(tStObject *stBall)
+{
+	vita2d_draw_fill_circle(stBall->rX, stBall->rY, stBall->uiHeight, stBall->luiColor);
+}
+
+void showFrame(tStObject *stFrame)
+{
+	if (stFrame[0].xVisible)
+	{
+		vita2d_draw_rectangle(stFrame[0].rX, stFrame[0].rY, stFrame[0].uiWidth, stFrame[0].uiHeight, stFrame[0].luiColor);
+	}
+	
+	if (stFrame[1].xVisible)
+	{
+		vita2d_draw_rectangle(stFrame[1].rX, stFrame[1].rY, stFrame[1].uiWidth, stFrame[1].uiHeight, stFrame[1].luiColor);
+	}
+
+	if (stFrame[2].xVisible)
+	{
+		vita2d_draw_rectangle(stFrame[2].rX, stFrame[2].rY, stFrame[2].uiWidth, stFrame[3].uiHeight, stFrame[2].luiColor);
+	}
+
+	if (stFrame[3].xVisible)
+	{
+		vita2d_draw_rectangle(stFrame[3].rX, stFrame[3].rY, stFrame[3].uiWidth, stFrame[3].uiHeight, stFrame[3].luiColor);
+	}
+}
+
+void showBrick(tStObject *stBrick, unsigned short uiNumberOfBricks)
+{
+	for (int i=0; i<uiNumberOfBricks; i++)
+	{
+		if (stBrick[i].xVisible)
+		{
+			unsigned char usiRedTerm = stBrick[i].luiColor & 0xFF;
+			unsigned char usiGreenTerm = ((stBrick[i].luiColor)>>8) & 0xFF;
+			unsigned char usiBlueTerm = ((stBrick[i].luiColor)>>16) & 0xFF;
+
+			unsigned int luiDarkerColor = ((((255)&0xFF)<<24) | (((usiBlueTerm/stBrick[i].uiLives)&0xFF)<<16) | (((usiGreenTerm/stBrick[i].uiLives)&0xFF)<<8) | (((usiRedTerm/stBrick[i].uiLives)&0xFF)<<0));
+
+			vita2d_draw_rectangle(stBrick[i].rX, stBrick[i].rY, stBrick[i].uiWidth, stBrick[i].uiHeight, stBrick[i].luiColor);
+			vita2d_draw_rectangle(stBrick[i].rX+stBrick[i].uiWidth*0.1, stBrick[i].rY+stBrick[i].uiHeight*0.15, stBrick[i].uiWidth*0.8, stBrick[i].uiHeight*0.7, luiDarkerColor);
+		}
+	}
+}
+
+void closeVisualizer()
+{
+    vita2d_wait_rendering_done();
+	vita2d_end_drawing();
+	vita2d_swap_buffers();
+	sceDisplayWaitVblankStart();
+}
+
+void finishVisualizer()
+{
+    vita2d_fini();
 }

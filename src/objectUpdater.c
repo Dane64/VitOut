@@ -1,154 +1,291 @@
 #include "objectUpdater.h"
+#include <math.h>
 
-#define MAX(a, b) ( ( a > b) ? a : b )
-#define MIN(a, b) ( ( a < b) ? a : b )
-#define PI 3.14159265
-#define Deg2Rad PI/180
-
-void paddleUpdate(Position *stPadPos, Velocity *stPadVel, Characteristics *stPadChar, Console *stVita, Map *stFrame)
+typedef enum tEnumHitPlane
 {
-    float rMaxRangeJoystick = 128;
-    float rDeadzoneJoystick = 10;
-    float rMaxPaddleSpeed = 10;
-    stPadVel->rDotX = 0;
-    stPadVel->rDotY = 0;
+    None,
+    Top,
+    Bottom,
+    Left,
+    Right
+} tEnumHitPlane;
 
-    if (stVita->stLeftJoy.siX >= rDeadzoneJoystick ||
-        stVita->stLeftJoy.siX <= -rDeadzoneJoystick)
-    {
-        if (((stVita->stLeftJoy.siX < 0) & (stPadPos->rX > (stFrame->uiLeftBorder[1] + stFrame->uiFrameThickness))) ||
-            ((stVita->stLeftJoy.siX > 0) & (stPadPos->rX < (stFrame->uiRightBorder[1] - stPadChar->uiWidth)))) //Right border already has frame thickness included because of drawing method
-        {
-            stPadVel->rDotX = (float)stVita->stLeftJoy.siX * (rMaxPaddleSpeed / rMaxRangeJoystick);
-            stPadPos->rX += stPadVel->rDotX;
-            stPadPos->rX = MAX((stFrame->uiLeftBorder[1] + stFrame->uiFrameThickness), MIN(stPadPos->rX, (stFrame->uiRightBorder[1] - stPadChar->uiWidth)));
-        }
-    }
+typedef struct tStIntercept
+{
+    float x;
+    float y;
+    tEnumHitPlane ePlane;
+} tStIntercept;
+
+bool checkOverlap(tStObject *stBall, tStObject *stRect) // AABB (Axis Aligned Bounding Box)
+{
+    return  stBall->rX >= (stRect->rX - stBall->uiWidth) &&
+            stBall->rX <= (stRect->rX + stRect->uiWidth + stBall->uiWidth) &&
+            stBall->rY >= (stRect->rY - stBall->uiHeight) &&
+            stBall->rY <= (stRect->rY + stBall->uiHeight + stRect->uiHeight);
 }
 
-bool ballUpdate(Position *stBallPos, Velocity *stBallVel, Characteristics *stBallChar, Map *stFrame, Position *stPadPos, Velocity *stPadVel, Characteristics *stPadChar, Position *stBlockPos, Characteristics *stBlockChar, Console *stVita, unsigned short uiNrOfBlocks)
+tStIntercept intercept (float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, tEnumHitPlane ePlane)
 {
-    unsigned short i = 0;
-    bool xAllBlocksDestroyed = true;
-
-    // reset ball position
-    if (stBallVel->rDotX == 0 && stBallVel->rDotY == 0)
+    tStIntercept stIntercept = {0, 0, None};
+    float denom = ((y4-y3) * (x2-x1)) - ((x4-x3) * (y2-y1));
+    if (denom != 0)
     {
-        stBallPos->rX = stPadPos->rX + (stPadChar->uiWidth / 2);
-        stBallPos->rY = stPadPos->rY - stBallChar->uiHeight;
-
-        if (stVita->xCross == true)
+        float ua = (((x4-x3) * (y1-y3)) - ((y4-y3) * (x1-x3))) / denom;
+        if ((ua >= 0) && (ua <= 1))
         {
-            unsigned short uiMax = 2000;
-            unsigned short uiMin = 100;
-            stBallVel->rDotY = -10.0;
-            stBallVel->rDotX = -0.2;
-        //    srand(time(0));
-        //    stBallVel->rDotY = (float)(rand()%(uiMax-uiMin+1)+uiMin)/1000;
-        //    stBallVel->rDotX = (float)(rand()%(uiMax-uiMin+1)+uiMin)/1000;
-        }
-    }
-
-    stBallPos->rX += stBallVel->rDotX;
-    stBallPos->rY += stBallVel->rDotY;
-
-    // Bounce off walls
-    if (stBallPos->rY <= (stFrame->uiTopBorder[2] + stFrame->uiFrameThickness + stBallChar->uiHeight)) //||
-        //stBallPos->rY >= (stFrame->uiBottomBorder[2] - stBallChar->uiHeight))
-    {
-        frameSound();
-        stBallVel->rDotY *= -1;
-    }
-
-    if (stBallPos->rX < (stFrame->uiLeftBorder[1] + stFrame->uiFrameThickness + stBallChar->uiWidth) ||
-        stBallPos->rX > (stFrame->uiRightBorder[1] - stBallChar->uiWidth)) 
-    {
-        frameSound();
-        stBallVel->rDotX *= -1;
-    }
-    
-    //Bounce off paddle
-    xBaseCollision =
-        stBallPos->rY > (stPadPos->rY - stBallChar->uiHeight) &&
-        stBallPos->rX >= (stPadPos->rX - stBallChar->uiWidth) &&
-        stBallPos->rX <= (stPadPos->rX + stPadChar->uiWidth + stBallChar->uiWidth);
-    
-    if (xBaseCollision && !xBaseCollisionOld)
-    {
-        xBaseCollisionTrigger = true;
-    }
-    else
-    {
-        xBaseCollisionTrigger = false;
-    }
-
-    xBaseCollisionOld = xBaseCollision;
-
-    if (xBaseCollision &&
-        xBaseCollisionTrigger)
-    {
-        paddleSound();
-        float rBallSpeed = sqrt(pow(stBallVel->rDotX, 2) + pow(stBallVel->rDotY, 2));
-        float rMinLateralSpeed = 0.2;
-
-        stBallVel->rDotX = MIN((rBallSpeed - rMinLateralSpeed), MAX((((stBallPos->rX - (stPadPos->rX + (float)stPadChar->uiWidth / 2))  / ((float)stPadChar->uiWidth / 2)) + (stPadVel->rDotX / 2)), (rBallSpeed*-1 + rMinLateralSpeed)));
-        stBallVel->rDotY = sqrt(pow(rBallSpeed,2) - pow(stBallVel->rDotX, 2)) * -1;
-    }
-
-    // Check ball position
-    if (stBallPos->rY > (stPadPos->rY + stPadChar->uiHeight + stBallChar->uiHeight))
-    {
-        stBallChar->uiLives--;
-    }
-
-    //Bounce off block
-    for (i = 0; i < uiNrOfBlocks; i++)
-    {
-        if (stBlockChar[i].xVisible)
-        {
-            xAllBlocksDestroyed = false;
-            if (stBallPos->rY >= (stBlockPos[i].rY - stBallChar->uiHeight) &&
-                stBallPos->rY <= (stBlockPos[i].rY + stBlockChar[i].uiHeight + stBallChar->uiHeight) &&
-                stBallPos->rX >= (stBlockPos[i].rX - stBallChar->uiWidth) &&
-                stBallPos->rX <= (stBlockPos[i].rX + stBlockChar[i].uiWidth + stBallChar->uiWidth))
+            float ub = (((x2-x1) * (y1-y3)) - ((y2-y1) * (x1-x3))) / denom;
+            if ((ub >= 0) && (ub <= 1))
             {
-                blockSound();
-                stBlockChar[i].uiLives --;
-                stBallVel->rDotY *= -1;
-
-                if (stBlockChar[i].uiLives == 0)
-                {
-                    stBlockChar[i].xVisible = false;
-                }
-                break;
-            }
-
-            else if (stBallPos->rX <= (stBlockPos[i].rX + stBlockChar[i].uiWidth + stBallChar->uiWidth) &&
-                stBallPos->rX >= (stBlockPos[i].rX - stBallChar->uiWidth) &&
-                stBallPos->rY >= (stBlockPos[i].rY - stBallChar->uiHeight) &&
-                stBallPos->rY <= (stBlockPos[i].rY + stBlockChar[i].uiHeight + stBallChar->uiHeight))
-            {
-                blockSound();
-                stBlockChar[i].uiLives --;
-                stBallVel->rDotX *= -1;
-
-                if (stBlockChar[i].uiLives == 0)
-                {
-                    stBlockChar[i].xVisible = false;
-                }
-                break;
+                stIntercept.x = x1 + (ua * (x2-x1));
+                stIntercept.y = y1 + (ua * (y2-y1));
+                stIntercept.ePlane = ePlane;
             }
         }
     }
 
-    // reset ball charistics
-    if (stBallChar->uiLives < uiOldLives)
-    {
-        stBallVel->rDotX = 0;
-        stBallVel->rDotY = 0;
-    }
-    
-    uiOldLives = stBallChar->uiLives;
+    return stIntercept;
+}
 
-    return xAllBlocksDestroyed;
+tStIntercept ballIntercept (tStObject *stBall, tStObject *stRect, float rDotX, float rDotY)
+{
+    tStIntercept stIntercept = {0, 0, None};
+
+    if (rDotX < 0)
+    {
+            stIntercept = intercept(stBall->rX,
+                                    stBall->rY,
+                                    stBall->rX + rDotX,
+                                    stBall->rY + rDotY,
+                                    stRect->rX + stRect->uiWidth + stBall->uiWidth, // RIGHT
+                                    stRect->rY - stBall->uiHeight, // TOP
+                                    stRect->rX + stRect->uiWidth + stBall->uiWidth, // RIGHT
+                                    stRect->rY + stRect->uiHeight + stBall->uiHeight, // BOTTOM
+                                    Right);
+    }
+    else if (rDotX > 0)
+    {
+            stIntercept = intercept(stBall->rX,
+                                    stBall->rY,
+                                    stBall->rX + rDotX,
+                                    stBall->rY + rDotY,
+                                    stRect->rX - stBall->uiWidth, // LEFT
+                                    stRect->rY - stBall->uiHeight, // TOP
+                                    stRect->rX - stBall->uiWidth, // LEFT
+                                    stRect->rY + stRect->uiHeight + stBall->uiHeight, // BOTTOM
+                                    Left);
+    }
+    if (stIntercept.ePlane == None)
+    {
+        if (rDotY < 0)
+        {
+            stIntercept = intercept(stBall->rX,
+                                    stBall->rY,
+                                    stBall->rX + rDotX,
+                                    stBall->rY + rDotY,
+                                    stRect->rX - stBall->uiWidth, // LEFT
+                                    stRect->rY + stRect->uiHeight + stBall->uiHeight, // BOTTOM
+                                    stRect->rX + stRect->uiWidth + stBall->uiWidth, // RIGHT
+                                    stRect->rY + stRect->uiHeight + stBall->uiHeight, // BOTTOM
+                                    Bottom);
+        }
+        else if (rDotY > 0)
+        {
+            stIntercept = intercept(stBall->rX,
+                                    stBall->rY,
+                                    stBall->rX + rDotX,
+                                    stBall->rY + rDotY,
+                                    stRect->rX - stBall->uiWidth, // LEFT
+                                    stRect->rY - stBall->uiHeight, // TOP
+                                    stRect->rX + stRect->uiWidth + stBall->uiWidth, // RIGHT
+                                    stRect->rY - stBall->uiHeight, // TOP
+                                    Top);
+        }
+    }
+    return stIntercept;
+}
+
+bool checkCollision(tStObject *stBall, tStObject *stFrame, tStObject *stPaddle, tStObject *stBrick, unsigned short uiNumberOfBricks, float rTime)
+{
+    // if (rTime <= 0)
+    // {
+    //     return true;
+    // }
+
+	bool xPaddleCollision = false;
+    int iBrickHit = -1;
+    float rDistance = 0.0;
+    float rClosest = 9999.9;
+    tStIntercept stIntercept = {0, 0, None};
+    tStIntercept stClosestIntercept = {0, 0, None};
+
+	float rNewBallDotX = stBall->rDotX*rTime;
+	float rNewBallDotY = stBall->rDotY*rTime;
+
+    // Check for closest wall collision
+    for (int i=0; i<4; i++)
+    {  
+        if (stFrame[i].xVisible)
+        {
+            stIntercept = ballIntercept(stBall, &stFrame[i], rNewBallDotX, rNewBallDotY);
+
+            if (stIntercept.ePlane != None)
+            {
+                rDistance = sqrtf(powf((stIntercept.x-stBall->rX), 2) + powf((stIntercept.y-stBall->rY), 2));
+                if (rDistance < rClosest)
+                {
+                    rClosest = rDistance;
+                    stClosestIntercept = stIntercept;
+                }
+            }
+        }
+    }
+
+    // Check for paddle collision
+    if (stPaddle->xVisible)
+    {
+        stIntercept = ballIntercept(stBall, stPaddle, rNewBallDotX, rNewBallDotY);
+
+        if (stIntercept.ePlane != None)
+        {
+            rDistance = sqrtf(powf((stIntercept.x-stBall->rX), 2) + powf((stIntercept.y-stBall->rY), 2));
+            if (rDistance < rClosest)
+            {
+                rClosest = rDistance;
+                stClosestIntercept = stIntercept;
+                xPaddleCollision = true;
+            }
+        }
+    }
+
+    // Check for closest brick collision
+    for (int i=0; i<uiNumberOfBricks; i++)
+    {  
+        if (stBrick[i].xVisible)
+        {
+            stIntercept = ballIntercept(stBall, &stBrick[i], rNewBallDotX, rNewBallDotY);
+
+            if (stIntercept.ePlane != None)
+            {
+                rDistance = sqrtf(powf((stIntercept.x-stBall->rX), 2) + powf((stIntercept.y-stBall->rY), 2));
+                if (rDistance < rClosest)
+                {
+                    rClosest = rDistance;
+                    stClosestIntercept = stIntercept;
+                    iBrickHit = i;
+                }
+            }
+        }
+    }
+
+    if (rClosest < 999.9) // Less than it's original value means it hit something
+    {
+        if (iBrickHit >= 0)
+        {
+            stBrick[iBrickHit].uiLives--;
+        }
+        stBall->rX = stClosestIntercept.x;
+        stBall->rY = stClosestIntercept.y;
+        float rIntendedSpeed = sqrtf(powf(rNewBallDotX,2) + powf(rNewBallDotY,2));
+        float rTimeRemaining = rTime - (rTime * (rClosest / rIntendedSpeed));
+
+        if (xPaddleCollision && stClosestIntercept.ePlane == Top)
+        {
+            float rBallSpeed = sqrtf(powf(stBall->rDotX, 2) + powf(stBall->rDotY, 2));
+            float rMaxLateralSpeed = 350;
+            float rNormHit = ((stBall->rX - (stPaddle->rX + (float)stPaddle->uiWidth / 2))  / ((float)stPaddle->uiWidth / 2));
+            stBall->rDotX = rMaxLateralSpeed * rNormHit;//(stPaddle->rDotX / 2) + rNormHit < 0 ? rNormHit * rMaxLateralSpeed - 20 : rNormHit * rMaxLateralSpeed + 20;
+            stBall->rDotY = sqrtf(powf(rBallSpeed,2) - powf(stBall->rDotX, 2));
+        }
+
+        if (stClosestIntercept.ePlane == Left || stClosestIntercept.ePlane == Right)
+        {
+            stBall->rDotX*= -1;
+        }
+        else if (stClosestIntercept.ePlane == Top || stClosestIntercept.ePlane == Bottom)
+        {
+            stBall->rDotY*= -1;
+        }
+
+       return checkCollision(stBall, stFrame, stPaddle, stBrick, uiNumberOfBricks, rTimeRemaining); // call recursively but stay on the same depth
+    }
+
+    stBall->rX += rNewBallDotX;
+    stBall->rY += rNewBallDotY;
+
+    return false;
+}
+
+void paddleUpdate(stGamePad *stMcd, tStObject *stPaddle, tStObject *stFrame)
+{
+    static SceRtcTick uliLast;
+    SceRtcTick uliCurrent;
+    sceRtcGetCurrentTick(&uliCurrent);
+    float tDelta = (uliCurrent.tick - uliLast.tick) / (float)sceRtcGetTickResolution();
+    uliLast = uliCurrent;
+
+    float rMaxPaddleSpeed = 750;
+    stPaddle->rDotX = 0;
+    stPaddle->rDotY = 0;
+
+    if (stMcd->stJoy[0].siX != 0)
+    {
+        stPaddle->rDotX = (float)stMcd->stJoy[0].siX * (rMaxPaddleSpeed / 127);
+        stPaddle->rX += stPaddle->rDotX * tDelta;
+        stPaddle->rX = limit(stFrame[1].rX-stPaddle->uiWidth, stFrame[0].rX+stFrame[0].uiWidth, stPaddle->rX);
+    }
+
+    // if (stMcd->stJoy[0].siY != 0)
+    // {
+    //     stPaddle->rDotY = (float)stMcd->stJoy[0].siY * (rMaxPaddleSpeed / 127);
+    //     stPaddle->rY += stPaddle->rDotY;
+    //     stPaddle->rY = limit(stFrame[3].rY-stPaddle->uiHeight, stFrame[2].rY+stFrame[2].uiHeight, stPaddle->rY);
+    // }
+}
+
+void ballUpdate(stGamePad *stMcd, tStObject *stBall, tStObject *stPaddle, tStObject *stFrame, tStObject *stBrick, unsigned short uiNumberOfBricks)
+{
+    static SceRtcTick uliLast;
+    SceRtcTick uliCurrent;
+    sceRtcGetCurrentTick(&uliCurrent);
+    float tDelta = (uliCurrent.tick - uliLast.tick) / (float)sceRtcGetTickResolution();
+    uliLast = uliCurrent;
+
+    // // reset ball position
+    // if (stBall->rDotX == 0 && stBall->rDotY == 0)
+    // {
+    //     stBall->rX = stPaddle->rX + (stPaddle->uiWidth / 2);
+    //     stBall->rY = stPaddle->rY - stBall->uiHeight;
+
+    //     if (stMcd->stButt[1].xTrigger)
+    //     {
+    //         unsigned short lfsr = 0xACE1u;
+    //         unsigned bit;
+    //         bit  = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5) ) & 1;
+    //         lfsr = (lfsr >> 1) | (bit << 15);
+    //         stBall->rDotY = -(lfsr%1000);
+    //         stBall->rDotX = -(lfsr%100);
+    //     }
+    // }
+
+        if (stMcd->stButt[1].xTrigger){
+            stBall->rDotY = -400;
+            stBall->rDotX = -100;       
+        }
+
+    // stBall->rDotX = stMcd->stJoy[1].siX;
+    // stBall->rDotY = stMcd->stJoy[1].siY;
+
+    checkCollision(stBall, stFrame, stPaddle, stBrick, uiNumberOfBricks, tDelta);
+}
+
+void brickUpdate(tStObject *stBrick, unsigned short uiNumberOfBricks)
+{
+    for (int i=0; i<uiNumberOfBricks; i++)
+    {
+        if (stBrick[i].uiLives == 0 && stBrick[i].xVisible)
+        {
+            stBrick[i].xVisible^= 1;
+        }
+    }
 }
