@@ -9,18 +9,20 @@ Try to destroy all the bricks as fast as possible and with the least lives lost.
 Bricks with darker core need 2-6 hits to be destoyed
 Bricks with one solid color dissapear with one hit
 
+In the level selector is the highscore per level visible (in the gif example lvl 6 has 3 golden balls and lvl 5 has no score yet)
+
 ## Screenshots
 <img src="Screenshots/MainMenu.gif"><br>
-- <kbd>Cross</kbd> or <kbd>Start</kbd> - Start the game \
-- <kbd>Dpad Up</kbd> or <kbd>Dpad Down</kbd> - Change selection \
+- <kbd>Cross</kbd> or <kbd>Start</kbd> - Start the game
+- <kbd>Dpad Up</kbd> or <kbd>Dpad Down</kbd> - Change selection
 
 <img src="Screenshots/LevelSelect.gif"><br>
-- <kbd>Dpad Left</kbd> or <kbd>Dpad Right</kbd> - Change Level \
-- <kbd>Dpad Up</kbd> or <kbd>Dpad Down</kbd> - Change selection \
+- <kbd>Dpad Left</kbd> or <kbd>Dpad Right</kbd> - Change Level
+- <kbd>Dpad Up</kbd> or <kbd>Dpad Down</kbd> - Change selection
 
 <img src="Screenshots/Game.gif"><br>
-- <kbd>Left Joystick</kbd> - Move Paddle \
-- <kbd>Cross</kbd> - Release ball \
+- <kbd>Left Joystick</kbd> - Move Paddle
+- <kbd>Cross</kbd> - Release ball
 - <kbd>Start</kbd> - Pause
 
 ## Known Bugs
