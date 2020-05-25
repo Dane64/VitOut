@@ -17,7 +17,15 @@ void showHighscore(unsigned short uiHighScore)
 {
 	for (int i=1; i <4; i++)
 	{
-		if (uiHighScore >= i)
+		if (uiHighScore >= i+20)
+		{
+			vita2d_draw_fill_circle(WIDTH-(25*i), HEIGHT-25, 10, GOLD);
+		}
+		else if (uiHighScore >= i+10)
+		{
+			vita2d_draw_fill_circle(WIDTH-(25*i), HEIGHT-25, 10, SILVER);
+		}
+		else if (uiHighScore >= i)
 		{
 			vita2d_draw_fill_circle(WIDTH-(25*i), HEIGHT-25, 10, BRONZE);
 		}

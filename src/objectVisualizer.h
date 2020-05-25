@@ -22,6 +22,7 @@
 	#define BROWN   	RGBA8(139,  69,  19, 255)
 	#define WHEAT   	RGBA8(245, 222, 179, 255)
 	#define PINK    	RGBA8(255, 192, 203, 255)
+	#define ALMOND		RGBA8(239, 222, 205, 255)
 
 	#define PLATINUM	RGBA8(229, 228, 226, 255)	
 	#define GOLD 		RGBA8(255, 215,   0, 255)

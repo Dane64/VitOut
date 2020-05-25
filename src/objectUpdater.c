@@ -286,7 +286,7 @@ void ballUpdate(stGamePad *stMcd, tStObject *stBall, tStObject *stPaddle, tStObj
     uiOldLives = stBall->uiLives;
 }
 
-void brickUpdate(tEnumState eGameState, tStObject *stBrick, unsigned short uiNumberOfBricks, float tDelta)
+float brickUpdate(tEnumState eGameState, tStObject *stBrick, unsigned short uiNumberOfBricks, float tDelta)
 {
     static float tCum;
     tCum += tDelta;
@@ -330,6 +330,8 @@ void brickUpdate(tEnumState eGameState, tStObject *stBrick, unsigned short uiNum
         }
         tCum = 0.0;
     }
+
+    return tCum;
 }
 
 bool checkBricks(tStObject *stBrick, unsigned short uiNumberOfBricks)
@@ -346,4 +348,65 @@ bool checkBricks(tStObject *stBrick, unsigned short uiNumberOfBricks)
     }
 
     return xAllBricksDestroyed;
+}
+
+unsigned char getHighScore(unsigned char usiLevel, unsigned short uiLives, float tGameDuration)
+{
+    unsigned char usiHighScore = 0;
+
+    float rBronzeTime = 0.0;
+    float rSilverTime = 0.0;
+    float rGoldTime = 0.0;
+
+    if (usiLevel == 1)
+    {
+        rBronzeTime = 700.0;
+        rSilverTime = 500.0;
+        rGoldTime = 300.0;
+    }
+    else if (usiLevel == 2)
+    {
+        rBronzeTime = 500.0;
+        rSilverTime = 300.0;
+        rGoldTime = 220.0;
+    }
+    else if (usiLevel == 3)
+    {
+        rBronzeTime = 800.0;
+        rSilverTime = 500.0;
+        rGoldTime = 400.0;
+    }
+    else if (usiLevel == 4)
+    {
+        rBronzeTime = 650.0;
+        rSilverTime = 500.0;
+        rGoldTime = 380.0;
+    }
+    else if (usiLevel == 5)
+    {
+        rBronzeTime = 600.0;
+        rSilverTime = 500.0;
+        rGoldTime = 430.0;
+    }
+    else if (usiLevel == 6)
+    {
+        rBronzeTime = 30.0;
+        rSilverTime = 20.0;
+        rGoldTime = 10.0;
+    }
+
+    if (tGameDuration <= rGoldTime)
+    {
+        usiHighScore = 20 + uiLives; // limit(250, 0, expf((float)uiLives / 100 * (rGoldTime - tGameDuration)));
+    }
+    else if (tGameDuration <= rSilverTime)
+    {
+        usiHighScore = 10 + uiLives;
+    }
+    else if (tGameDuration <= rBronzeTime)
+    {
+        usiHighScore = uiLives;
+    }
+ 
+    return usiHighScore;
 }

@@ -10,7 +10,8 @@
 float getElapsedtime();
 void paddleUpdate(stGamePad *stMcd, tStObject *stPaddle, tStObject *stFrame, float tDelta);
 void ballUpdate(stGamePad *stMcd, tStObject *stBall, tStObject *stPaddle, tStObject *stFrame, tStObject *stBrick, unsigned short uiNumberOfBricks, float tDelta);
-void brickUpdate(tEnumState eGameState, tStObject *stBrick, unsigned short uiNumberOfBricks, float tDelta);
+float brickUpdate(tEnumState eGameState, tStObject *stBrick, unsigned short uiNumberOfBricks, float tDelta);
 bool checkBricks(tStObject *stBrick, unsigned short uiNumberOfBricks);
+unsigned char getHighScore(unsigned char usiLevel, unsigned short uiLives, float tGameDuration);
 
 #endif

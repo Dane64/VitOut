@@ -13,6 +13,7 @@ bool xInit = true;
 void gameLoop(tEnumState *eGameState, stGamePad *stMcd, unsigned char *usiHighScore)
 {
 	static unsigned char usiLevelLoaded;
+	static float tCum;
 
 	if (ePrvGameState != *eGameState && *eGameState >= Playing)
 	{
@@ -36,9 +37,12 @@ void gameLoop(tEnumState *eGameState, stGamePad *stMcd, unsigned char *usiHighSc
 
 	if (*eGameState != Paused)
 	{
-		paddleUpdate(stMcd, &stPaddle, stFrame, tDelta);
-		ballUpdate(stMcd, &stBall, &stPaddle, stFrame, stBrick, BRICKS, tDelta);
-		brickUpdate(*eGameState, stBrick, BRICKS, tDelta);
+		if (*eGameState >= Playing)
+		{
+			paddleUpdate(stMcd, &stPaddle, stFrame, tDelta);
+			ballUpdate(stMcd, &stBall, &stPaddle, stFrame, stBrick, BRICKS, tDelta);
+		}
+		tCum = brickUpdate(*eGameState, stBrick, BRICKS, tDelta);
 	}
 
 	if (*eGameState >= Paused)
@@ -66,9 +70,9 @@ void gameLoop(tEnumState *eGameState, stGamePad *stMcd, unsigned char *usiHighSc
 	if (stBall.uiLives == 0 || checkBricks(stBrick, BRICKS))
 	{
 		xInit = true;
-		if (usiHighScore[usiLevelLoaded-1] < stBall.uiLives) // TODO: Make better highscore system
+		if (usiHighScore[usiLevelLoaded-1] < getHighScore(usiLevelLoaded, stBall.uiLives, tCum))
 		{
-			usiHighScore[usiLevelLoaded-1] = stBall.uiLives;
+			usiHighScore[usiLevelLoaded-1] = getHighScore(usiLevelLoaded, stBall.uiLives, tCum);
 			saveGame(usiHighScore);
 		}
 
