@@ -6,7 +6,7 @@
 ## How to play:
 Try to destroy all the bricks as fast as possible and with the least lives lost.
 
-Bricks with darker core need 2-6 hits to be destoyed
+Bricks with darker core need 2-6 hits to be destoyed \
 Bricks with one solid color dissapear with one hit
 
 In the level selector is the highscore per level visible (in the gif example lvl 6 has 3 golden balls and lvl 5 has no score yet)
