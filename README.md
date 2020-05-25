@@ -12,7 +12,9 @@
 
 ## Screenshots
 <img src="Screenshots/MainMenu.gif"><br>
+-<kbd>Cross</kbd> or <kbd>Start</kbd> - Start the game \
 <img src="Screenshots/LevelSelect.gif"><br>
+<img src="Screenshots/Game.gif"><br>
 
 ## Known Bugs
 
