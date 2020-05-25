@@ -12,7 +12,7 @@
 
 ## Screenshots
 <img src="Screenshots/MainMenu.gif"><br>
-<img src="Screenshots/2.png"><br>
+<img src="Screenshots/LevelSelect.gif"><br>
 
 ## Known Bugs
 
