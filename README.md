@@ -4,25 +4,30 @@
 [<img src="https://img.shields.io/github/v/release/Dane64/Vitout">](https://github.com/Dane64/VitOut/releases/latest)
 
 ## How to play:
- <kbd>Tap</kbd> - Start \
- <kbd>Tap</kbd> - Level 1 - 4 \
- <kbd>Left Joystick</kbd> - Move Paddle \
- <kbd>Cross</kbd> - Release ball \
- <kbd>Start</kbd> (<kbd>Circle</kbd>) - Pause (Quit Game)
+Try to destroy all the bricks as fast as possible and with the least lives lost.
+
+Bricks with darker core need 2-6 hits to be destoyed
+Bricks with one solid color dissapear with one hit
 
 ## Screenshots
 <img src="Screenshots/MainMenu.gif"><br>
 - <kbd>Cross</kbd> or <kbd>Start</kbd> - Start the game \
+- <kbd>Dpad Up</kbd> or <kbd>Dpad Down</kbd> - Change selection \
+
 <img src="Screenshots/LevelSelect.gif"><br>
+- <kbd>Dpad Left</kbd> or <kbd>Dpad Right</kbd> - Change Level \
+- <kbd>Dpad Up</kbd> or <kbd>Dpad Down</kbd> - Change selection \
+
 <img src="Screenshots/Game.gif"><br>
+- <kbd>Left Joystick</kbd> - Move Paddle \
+- <kbd>Cross</kbd> - Release ball \
+- <kbd>Start</kbd> - Pause
 
 ## Known Bugs
 
-- Ball is able to go beyond wall boundaries at the moment
-- Ball could destroy multiple lines of bricks when hit from the side
+- Tell me!
 
 ## Special Thanks to:
 
 Vitadev Package manager for releasing the SDK
-captaincrunch80 <http://opengameart.org/users/captaincrunch80> for publishing/sharing .ogg sounds
 I would like to thank the developers of Vita3K to help me create my content at a faster pace.
