@@ -1,0 +1,9 @@
+/build/
+/dist/
+/.cache/
+__pycache__/
+*.sha
+*.sha256
+*.sha256sum
+*.sha512
+SHA256SUMS
