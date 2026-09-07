@@ -1,0 +1,50 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      release-tag: ${{ github.ref_name }}
+
+  publish:
+    name: Publish tagged release
+    needs: build
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Download the built release
+        uses: actions/download-artifact@main
+        with:
+          name: VitOut-vpk
+          path: dist
+
+      - name: Publish VPK and checksum
+        working-directory: dist
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          VPK_FILENAME: ${{ needs.build.outputs.filename }}
+          PRERELEASE: ${{ needs.build.outputs.prerelease }}
+        run: |
+          sha256sum --check --strict SHA256SUMS
+          gh release create "$RELEASE_TAG" "$VPK_FILENAME" SHA256SUMS \
+            --verify-tag \
+            --title "VitOut ${RELEASE_TAG#v}" \
+            --generate-notes \
+            --prerelease="$PRERELEASE"

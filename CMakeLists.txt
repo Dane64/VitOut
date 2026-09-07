@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.16)
 
 if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
   if(DEFINED ENV{VITASDK})
@@ -14,7 +14,7 @@ include("${VITASDK}/share/vita.cmake" REQUIRED)
 
 set(VITA_APP_NAME "VitOut")
 set(VITA_TITLEID  "VITABREAK")
-set(VITA_VERSION  "02.00")
+set(VITA_VERSION "02.00" CACHE STRING "Vita package version (NN.NN)")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -34,6 +34,7 @@ add_executable(${SHORT_NAME}
 
 target_link_libraries(${SHORT_NAME}
   vita2d
+  SceAppMgr_stub
   SceDisplay_stub
   SceGxm_stub
   SceSysmodule_stub

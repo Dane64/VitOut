@@ -1,0 +1,96 @@
+name: Build VPK
+
+on:
+  workflow_call:
+    inputs:
+      release-tag:
+        description: Release tag; empty for an unversioned branch build
+        type: string
+        required: false
+        default: ""
+    outputs:
+      filename:
+        description: Built VPK filename
+        value: ${{ jobs.build.outputs.filename }}
+      prerelease:
+        description: Whether the tag names a prerelease
+        value: ${{ jobs.build.outputs.prerelease }}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build release artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      filename: ${{ steps.metadata.outputs.filename }}
+      prerelease: ${{ steps.metadata.outputs.prerelease }}
+    env:
+      RELEASE_TAG: ${{ inputs.release-tag }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@main
+        with:
+          persist-credentials: false
+
+      - name: Resolve release metadata
+        id: metadata
+        run: bash scripts/build.sh --metadata >> "$GITHUB_OUTPUT"
+
+      - name: Test build helpers
+        run: python3 -m unittest discover -s tests -p 'test_*.py'
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@master
+
+      - name: Build cached builder with latest dependencies
+        uses: docker/build-push-action@master
+        with:
+          context: .
+          platforms: linux/amd64
+          pull: true
+          no-cache-filters: package-index,sdk-index
+          load: true
+          tags: vitout-builder:ci
+          cache-from: type=gha,version=2,scope=vitout-builder
+          cache-to: type=gha,version=2,scope=vitout-builder,mode=max
+
+      - name: Identify installed toolchain
+        id: toolchain
+        run: |
+          fingerprint=$(docker run --rm --network none --entrypoint sha256sum \
+            vitout-builder:ci /usr/local/share/vitout/toolchain-versions)
+          echo "key=${fingerprint%% *}" >> "$GITHUB_OUTPUT"
+
+      - name: Restore compiler cache
+        uses: actions/cache@main
+        with:
+          path: .cache/ccache
+          key: ccache-v2-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.key }}-${{ hashFiles('CMakeLists.txt', 'src/**', 'scripts/build.sh') }}
+          restore-keys: |
+            ccache-v2-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.key }}-
+
+      - name: Build and check VPK
+        run: |
+          mkdir -p build dist .cache/ccache
+          docker run --rm --network none \
+            --user "$(id -u):$(id -g)" \
+            --env RELEASE_TAG \
+            --volume "$PWD:/src:ro" \
+            --volume "$PWD/build:/build" \
+            --volume "$PWD/dist:/out" \
+            --volume "$PWD/.cache/ccache:/ccache" \
+            vitout-builder:ci
+
+      - name: Upload VPK and checksum
+        uses: actions/upload-artifact@main
+        with:
+          name: VitOut-vpk
+          path: |
+            dist/*.vpk
+            dist/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0
