@@ -3,31 +3,75 @@
 [<img src="https://img.shields.io/github/downloads/Dane64/VitOut/total">](https://github.com/Dane64/VitOut/releases)
 [<img src="https://img.shields.io/github/v/release/Dane64/Vitout">](https://github.com/Dane64/VitOut/releases/latest)
 
-## How to play:
-Try to destroy all the bricks as fast as possible and with the least lives lost.
+## Gameplay
 
-Bricks with darker core need 2-6 hits to be destoyed \
-Bricks with one solid color dissapear with one hit
+Clear every brick while keeping as many lives as possible. Darker brick cores
+indicate additional hit points. Choose a level and difficulty in the menu;
+each combination has its own best score, medal, remaining lives, and clear time.
+Medal thresholds belong to the level, and only active play counts toward the
+timer: aiming a new serve and pausing do not consume time.
 
-In the level selector is the highscore per level visible (in the gif example lvl 6 has 3 golden balls and lvl 5 has no score yet)
+| Difficulty | Starting lives | Paddle width | Starting ball speed | Points |
+|---|---:|---:|---:|---:|
+| Easy | 5 | 180 px | 330 px/s | x1 |
+| Normal | 3 | 140 px | 420 px/s | x2 |
+| Hard | 2 | 108 px | 540 px/s | x3 |
 
-## Screenshots
+The ball accelerates as it damages bricks, with a difficulty-specific speed
+limit. Catch falling capsules with the paddle to activate powerups. Marked
+bricks guarantee the indicated capsule; other destroyed bricks have a 25%,
+18%, or 12% drop chance on Easy, Normal, or Hard.
+
+| Capsule | Effect |
+|---|---|
+| E | Wide paddle: 50% wider for 14 seconds |
+| S | Slow ball: all balls move at 70% speed for 10 seconds |
+| M | Multiball: split into up to three balls |
+| L | Extra life, up to a maximum of five |
+
+Collecting E or S again refreshes its timer instead of stacking the effect.
+You lose a life only when the last ball falls out of play. Losing a life clears
+capsules and temporary effects and prepares a fresh serve. Pausing freezes the
+entire simulation, including powerups.
+
+| Screen | Controls |
+|---|---|
+| Menu | D-pad Up/Down selects; Left/Right changes level or difficulty; Cross confirms; Start plays |
+| Level selection | L/R changes levels from any menu row; Select reloads level files |
+| Playing | Left stick or D-pad moves; Cross launches; Start pauses |
+| Paused | Cross/Start resumes; Triangle restarts; Circle returns to the menu |
+| Results | Cross plays the next level after a win, or retries after a loss; Triangle retries; Circle opens the menu |
+
+## External levels
+
+The six classic layouts and four new powerup-focused levels are shipped as
+plain-text `.lvl` files, not compiled arrays. Add more without rebuilding or
+reinstalling the game:
+
+1. Copy a bundled file from [`levels/`](levels/) and give it a new `id` and `name`.
+2. Edit its 20-by-30 brick grid using a text editor or an external generator.
+3. Transfer it with VitaShell USB or FTP to `ux0:/data/VitOut/levels/`.
+4. Press **Select** in the game's menu (or choose **Reload custom levels**).
+
+See the [level format and authoring guide](levels/README.md) for metadata,
+symbols, examples, and limits. Bundled files load from `app0:/levels/`; custom
+files follow them in filename order. Up to 128 total levels are supported.
+Malformed files and duplicate IDs are reported and skipped without preventing
+valid levels from loading.
+
+Scores live in `ux0:/data/VitOut/scores.dat` and use the stable level ID and
+difficulty, not the file's position in the menu. Renaming or reordering a file
+therefore does not mix up scores. Use a new ID for a substantially changed
+layout. An unreadable or corrupt score file is reported and is not overwritten.
+
+## Historical screenshots
+
+These animations show the original interface; the current version has a
+text-based menu, level previews, a gameplay HUD, and pause/results screens.
+
 <img src="Screenshots/MainMenu.gif"><br>
-- <kbd>Cross</kbd> or <kbd>Start</kbd> - Start the game
-- <kbd>Dpad Up</kbd> or <kbd>Dpad Down</kbd> - Change selection
-
 <img src="Screenshots/LevelSelect.gif"><br>
-- <kbd>Dpad Left</kbd> or <kbd>Dpad Right</kbd> - Change Level
-- <kbd>Dpad Up</kbd> or <kbd>Dpad Down</kbd> - Change selection
-
 <img src="Screenshots/Game.gif"><br>
-- <kbd>Left Joystick</kbd> - Move Paddle
-- <kbd>Cross</kbd> - Release ball
-- <kbd>Start</kbd> - Pause
-
-## Known Bugs
-
-- Tell me!
 
 ## Building
 
@@ -39,7 +83,36 @@ checksums are pinned in this repository. Only `libvita2d` and its dependencies
 are installed, rather than compiling the SDK or installing every VitaSDK package.
 The container targets `linux/amd64`.
 
-Build the image, then compile and package the game:
+The gameplay and content modules are platform-independent C11. The Vita target
+uses target-scoped GNU C11 settings, strict prototypes, and `-fno-common`, rather
+than relying on the compiler's changing default language standard. CMake 3.16
+or newer, including CMake 4.x, is supported. Simulation uses a bounded 120 Hz
+fixed step with swept collisions; input, presentation, and monotonic timing are
+kept in the Vita-specific layer.
+
+### Podman
+
+Build the image, then run the tests, compiler, and packager in the container:
+
+```sh
+podman build --pull=always --no-cache --tag vitout-builder .
+mkdir -p build dist .cache/ccache
+podman run --rm --network none --userns=keep-id \
+  --volume "$PWD:/src:ro" \
+  --volume "$PWD/build:/build" \
+  --volume "$PWD/dist:/out" \
+  --volume "$PWD/.cache/ccache:/ccache" \
+  vitout-builder
+```
+
+Podman's `--userns=keep-id` makes rootless build outputs belong to the current
+user. Podman does not provide BuildKit's per-stage `--no-cache-filter`, so
+`--no-cache` refreshes all image-build stages. Keep the mounted build and ccache
+directories to reuse compiled game objects.
+
+### Docker / BuildKit
+
+For selective dependency-metadata refresh while retaining installation layers:
 
 ```sh
 docker buildx build --pull --platform linux/amd64 \
@@ -68,10 +141,34 @@ building locally so cached layers cannot indefinitely hide dependency updates.
 Checksum files are ignored by Git; generated release checksums are still included
 in workflow artifacts and GitHub Releases.
 
+### Gameplay and content tests
+
+Every container build of the game runs the Python `unittest` suite before
+cross-compiling. The image includes a native compiler for portable engine,
+controller, menu, level parser, and score persistence regression tests. Tests
+also simulate the bundled levels at every difficulty, and exercise frame-rate
+independence, collisions, life loss, pause/resume, and all four powerups.
+
+Run just the tests in Podman:
+
+```sh
+podman run --rm --network none --userns=keep-id \
+  --env PYTHONDONTWRITEBYTECODE=1 \
+  --volume "$PWD:/src:ro" \
+  --entrypoint python3 vitout-builder \
+  -m unittest discover -s /src/tests -p 'test_*.py'
+```
+
+Add `--env VITOUT_SANITIZERS=1` to enable AddressSanitizer and
+UndefinedBehaviorSanitizer for the native C tests. Temporary test files stay
+inside the container; no SDK, native compiler, or Python install is needed on
+the host.
+
 ## CI and releases
 
 Every branch push and pull request runs the same containerized Release build
-used for publishing, including VPK archive integrity checks. Branch builds are
+used for publishing, including gameplay/content tests and VPK archive integrity
+checks. Branch builds are
 available as the `VitOut-vpk` workflow artifact for seven days; they never create
 a GitHub Release or derive a version from the branch name. CI can also be run
 manually from the Actions tab.

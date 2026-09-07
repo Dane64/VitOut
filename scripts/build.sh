@@ -33,12 +33,13 @@ source_dir="${SOURCE_DIR:-/src}"
 build_dir="${BUILD_DIR:-/build}"
 output_dir="${OUTPUT_DIR:-/out}"
 
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s "$source_dir/tests" -p 'test_*.py'
+
 # Clear a previous tag's version when reusing a local build directory.
 cmake_args=(
     -S "$source_dir" -B "$build_dir" -G Ninja
     -DCMAKE_BUILD_TYPE=Release
     -DCMAKE_C_COMPILER_LAUNCHER=ccache
-    -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
     -U VITA_VERSION
 )
 if [[ -n "$vita_version" ]]; then

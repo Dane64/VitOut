@@ -1,0 +1,25 @@
+VITOUT_LEVEL 1
+id=classic-04
+name=Cat
+times=380,500,650
+[bricks]
+.bbbb....................bbbb.
+.bpppbbbbb..........bbbbbpppb.
+.bppppppppbb......bbppppppppb.
+.bppppppppppbbbbbbppppppppppb.
+.bppppppwwwwwwwwwwwwwwppppppb.
+..bpppwwwwwwwwwwwwwwwwwwpppb..
+..wpwwwwwwwwwwWWwwwwwwwwwwpw..
+.wwwwwwwwwwwwWWWWwwwwwwwwwwww.
+.wwwwwwwKKKKKWWWWKKKKKwwwwwww.
+.wwwwwwwKKBKKWWWWKKBKKwwwwwww.
+.wwwwwwwKKKKKWWWWKKKKKwwwwwww.
+wwwwwwwwwwwWWWWWWWWwwwwwwwwwww
+wwwwwwwwwwWWWWWWWWWWwwwwwwwwww
+wwwwwwwwwWWWWWppWWWWWwwwwwwwww
+wwwwwwwwwWWWppppppWWWwwwwwwwww
+.wwwwwwwWWWWWWppWWWWWWwwwwwww.
+...wwwwWWWWWWWBBWWWWWWWwwww...
+.....wWWWWWBBBBBBBBWWWWWw.....
+.......wWWWWWWWWWWWWWWw.......
+......wWWWWWWWWWWWWWWWWw......

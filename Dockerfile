@@ -1,4 +1,4 @@
-ARG BUILD_PACKAGES="bzip2 ca-certificates ccache cmake curl jq ninja-build pkg-config unzip xz-utils"
+ARG BUILD_PACKAGES="bzip2 ca-certificates ccache cmake curl gcc jq libc6-dev ninja-build pkg-config python3 unzip xz-utils"
 
 # Refresh these probes with --no-cache-filter package-index,sdk-index.
 FROM ubuntu:latest AS package-index
